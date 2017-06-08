@@ -148,9 +148,9 @@ proc clamp*[T](v: Vec2[T], a, b: T): Vec2[T] {.inline.} =
   Vec2[T](x: clamp(v.x, a, b),
           y: clamp(v.y, a, b))
 
-proc lerp*[T](a, b: Vec2[T], t: T): Vec2[T] {.inline.} =
-  Vec2[T](x: (1-t) * a.x + t * b.x,
-          y: (1-t) * a.y + t * b.y)
+proc lerp*[T](a, b: Vec2[T], t: FloatT): Vec2[T] {.inline.} =
+  Vec2[T](x: T((1-t) * FloatT(a.x) + t * FloatT(b.x)),
+          y: T((1-t) * FloatT(a.y) + t * FloatT(b.y)))
 
 # }}}
 # {{{ Vec3
@@ -320,10 +320,77 @@ proc clamp*[T](v: Vec3[T], a, b: T): Vec3[T] {.inline.} =
           y: clamp(v.y, a, b),
           z: clamp(v.z, a, b))
 
-proc lerp*[T](a, b: Vec3[T], t: T): Vec3[T] {.inline.} =
-  Vec3[T](x: (1-t) * a.x + t * b.x,
-          y: (1-t) * a.y + t * b.y,
-          z: (1-t) * a.z + t * b.z)
+proc lerp*[T](a, b: Vec3[T], t: FloatT): Vec3[T] {.inline.} =
+  Vec3[T](x: T((1-t) * FloatT(a.x) + t * FloatT(b.x)),
+          y: T((1-t) * FloatT(a.y) + t * FloatT(b.y)),
+          z: T((1-t) * FloatT(a.z) + t * FloatT(b.z)))
+
+# }}}
+# {{{ Mat4x4
+
+type Mat4x4* = object
+  m*: array[1..4, array[1..4, FloatT]]
+
+proc mat4x4*(m: array[1..4, array[1..4, FloatT]]): Mat4x4 {.inline.} =
+  Mat4x4(m: m)
+
+proc `[]`*(m: Mat4x4, r, c: int): FloatT {.inline.} =
+  m.m[r][c]
+
+proc `[]=`*(m: var Mat4x4, r, c: int, v: FloatT) {.inline.} =
+  m.m[r][c] = v
+
+proc inverse(m: Mat4x4): Mat4x4 =
+  m # TODO
+
+# }}}
+# {{{ Transform
+
+type Transform* = object
+  t*, tinv*: Mat4x4
+
+proc transform*(t: Mat4x4): Transform {.inline.} =
+  Transform(t: t, tinv: t.inverse)
+
+proc transform*(t: Mat4x4, tinv: Mat4x4): Transform {.inline.} =
+  Transform(t: t, tinv: tinv)
+
+proc translate*(dx, dy, dz: FloatT): Transform =
+  let
+    t = mat4x4([[FloatT(1), 0, 0, dx],
+                [FloatT(0), 1, 0, dy],
+                [FloatT(0), 0, 1, dz],
+                [FloatT(0), 0, 0,  1]])
+
+    tinv = mat4x4([[FloatT(1), 0, 0, -dx],
+                   [FloatT(0), 1, 0, -dy],
+                   [FloatT(0), 0, 1, -dz],
+                   [FloatT(0), 0, 0,   1]])
+
+  transform(t, tinv)
+
+
+proc scale*(sx, sy, sz: FloatT): Transform =
+  assert sx != 0
+  assert sy != 0
+  assert sz != 0
+  let
+    t = mat4x4([[FloatT(sx), 0,  0, 0],
+                [FloatT(0), sy,  0, 0],
+                [FloatT(0),  0, sz, 0],
+                [FloatT(0),  0,  0, 1]])
+
+    tinv = mat4x4([[FloatT(1/sx),    0,    0, 0],
+                   [FloatT(0),    1/sy,    0, 0],
+                   [FloatT(0),       0, 1/sz, 0],
+                   [FloatT(0),       0,    0, 1]])
+
+  transform(t, tinv)
+
+
+proc scale*(s: FloatT): Transform =
+  scale(s, s, s)
+
 
 # }}}
 # {{{ Box2
@@ -378,6 +445,48 @@ proc intersect*[T](a: Box2[T], b: Box2[T]): Box2[T] {.inline.} =
           pMax: vec2f(min(a.pMax.x, b.pMax.x),
                       min(a.pMax.y, b.pMax.y)))
 
+proc overlaps*[T](a: Box2[T], b: Box2[T]): bool {.inline.} =
+  (a.pMax.x >= b.pMin.x and a.pMin.x <= b.pMax.x and
+   a.pMax.y >= b.pMin.y and a.pMin.y <= b.pMax.y)
+
+proc inside*[T](b: Box2[T], p: Vec2[T]): bool {.inline.} =
+  (p.x >= b.pMin.x and p.x <= b.pMax.x and
+   p.y >= b.pMin.y and p.y <= b.pMax.y)
+
+proc insideExclusive*[T](b: Box2[T], p: Vec2[T]): bool {.inline.} =
+  (p.x >= b.pMin.x and p.x < b.pMax.x and
+   p.y >= b.pMin.y and p.y < b.pMax.y)
+
+proc center*[T](b: Box2[T]): Vec2[T] {.inline.} =
+  Vec2[T](x: T((b.pMin.x + b.pMax.x) / 2),
+          y: T((b.pMin.y + b.pMax.y) / 2))
+
+proc diagonal*[T](b: Box2[T]): Vec2[T] {.inline.} =
+  b.pMax - b.pMin
+
+proc maxExtent*[T](b: Box2[T]): int {.inline.} =
+  let d = diagonal
+  if d.x > d.y: result = 0
+  else: result = 1
+
+proc area*[T](b: Box2[T]): T {.inline.} =
+  let d = b.diagonal
+  d.x * d.y
+
+proc expand*[T,U](b: Box2[T], d: U): Box2[T] {.inline.} =
+  let delta = Vec2[T](x: d, y: d)
+  Box2[T](pMin: b.pMin - delta,
+          pMax: b.pMax + delta)
+
+proc lerp*[T,U](b: Box2[T], t: FloatT): Vec2[T] {.inline.} =
+  lerp(b.pMin, b.pMax, t)
+
+proc offset*[T](b: Box2[T], p: Vec2[T]): Vec2[T] {.inline.} =
+  let o = p - b.pMin
+  if b.pMax.x > b.pMin.x: o.x /= b.pMax.x - b.pMin.x
+  if b.pMax.y > b.pMin.y: o.y /= b.pMax.y - b.pMin.y
+  result = o
+
 # }}}
 # {{{ Box3
 
@@ -430,6 +539,58 @@ proc intersect*[T](a: Box3[T], b: Box3[T]): Box3[T] {.inline.} =
           pMax: vec3f(min(a.pMax.x, b.pMax.x),
                       min(a.pMax.y, b.pMax.y),
                       min(a.pMax.z, b.pMax.z)))
+
+proc overlaps*[T](a: Box3[T], b: Box3[T]): bool {.inline.} =
+  (a.pMax.x >= b.pMin.x and a.pMin.x <= b.pMax.x and
+   a.pMax.y >= b.pMin.y and a.pMin.y <= b.pMax.z and
+   a.pMax.z >= b.pMin.z and a.pMin.z <= b.pMax.z)
+
+proc inside*[T](b: Box3[T], p: Vec3[T]): bool {.inline.} =
+  (p.x >= b.pMin.x and p.x <= b.pMax.x and
+   p.y >= b.pMin.y and p.y <= b.pMax.y and
+   p.z >= b.pMin.z and p.z <= b.pMax.z)
+
+proc insideExclusive*[T](b: Box3[T], p: Vec3[T]): bool {.inline.} =
+  (p.x >= b.pMin.x and p.x < b.pMax.x and
+   p.y >= b.pMin.y and p.y < b.pMax.y and
+   p.z >= b.pMin.z and p.z < b.pMax.z)
+
+proc center*[T](b: Box3[T]): Vec3[T] {.inline.} =
+  Vec2[T](x: T((b.pMin.x + b.pMax.x) / 2),
+          y: T((b.pMin.y + b.pMax.y) / 2),
+          z: T((b.pMin.z + b.pMax.z) / 2))
+
+proc diagonal*[T](b: Box3[T]): Vec3[T] {.inline.} =
+  b.pMax - b.pMin
+
+proc maxExtent*[T](b: Box3[T]): int {.inline.} =
+  let d = diagonal
+  if d.x > d.y and d.x > d.z: result = 0
+  elif d.y > d.z: result = 1
+  else: result = 2
+
+proc area*[T](b: Box3[T]): T {.inline.} =
+  let d = b.diagonal
+  2 * (d.x * d.y + d.y * d.z + d.x * d.z)
+
+proc volume*[T](b: Box3[T]): T {.inline.} =
+  let d = b.diagonal
+  d.x * d.y * d.z
+
+proc expand*[T,U](b: Box3[T], d: U): Box3[T] {.inline.} =
+  let delta = Vec3[T](x: d, y: d, z: d)
+  Box3[T](pMin: b.pMin - delta,
+          pMax: b.pMax + delta)
+
+proc lerp*[T,U](b: Box3[T], t: FloatT): Vec3[T] {.inline.} =
+  lerp(b.pMin, b.pMax, t)
+
+proc offset*[T](b: Box3[T], p: Vec3[T]): Vec3[T] {.inline.} =
+  let o = p - b.pMin
+  if b.pMax.x > b.pMin.x: o.x /= b.pMax.x - b.pMin.x
+  if b.pMax.y > b.pMin.y: o.y /= b.pMax.y - b.pMin.y
+  if b.pMax.z > b.pMin.z: o.z /= b.pMax.z - b.pMin.z
+  result = o
 
 # }}}
 # {{{ Ray
@@ -646,12 +807,72 @@ when isMainModule:
       assert true
 
   # }}}
+  # {{{ Mat4x4
+  block:
+    var m = mat4x4([[FloatT(1),   2,  3,  4],
+                    [FloatT(5),   6,  7,  8],
+                    [FloatT(9),  10, 11, 12],
+                    [FloatT(13), 14, 15, 16]])
+
+    assert m[1,1] == 1
+    assert m[1,2] == 2
+    assert m[1,3] == 3
+    assert m[1,4] == 4
+    assert m[2,1] == 5
+    assert m[2,2] == 6
+    assert m[2,3] == 7
+    assert m[2,4] == 8
+    assert m[3,1] == 9
+    assert m[3,2] == 10
+    assert m[3,3] == 11
+    assert m[3,4] == 12
+    assert m[4,1] == 13
+    assert m[4,2] == 14
+    assert m[4,3] == 15
+    assert m[4,4] == 16
+
+    m[1,1] = 11
+    m[1,2] = 12
+    m[1,3] = 13
+    m[1,4] = 14
+    m[2,1] = 15
+    m[2,2] = 16
+    m[2,3] = 17
+    m[2,4] = 18
+    m[3,1] = 19
+    m[3,2] = 110
+    m[3,3] = 111
+    m[3,4] = 112
+    m[4,1] = 113
+    m[4,2] = 114
+    m[4,3] = 115
+    m[4,4] = 116
+
+    assert m[1,1] == 11
+    assert m[1,2] == 12
+    assert m[1,3] == 13
+    assert m[1,4] == 14
+    assert m[2,1] == 15
+    assert m[2,2] == 16
+    assert m[2,3] == 17
+    assert m[2,4] == 18
+    assert m[3,1] == 19
+    assert m[3,2] == 110
+    assert m[3,3] == 111
+    assert m[3,4] == 112
+    assert m[4,1] == 113
+    assert m[4,2] == 114
+    assert m[4,3] == 115
+    assert m[4,4] == 116
+
+  # }}}
   # {{{ Ray
   block:
     let r = Ray(o: vec3f(1, 2, 3), d: vec3f(-1, -0.5, 0))
 
     assert r.t(3) == vec3f(-2, 0.5, 3)
 
+  # }}}
 
 # }}}
 
