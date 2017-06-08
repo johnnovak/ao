@@ -326,110 +326,110 @@ proc lerp*[T](a, b: Vec3[T], t: T): Vec3[T] {.inline.} =
           z: (1-t) * a.z + t * b.z)
 
 # }}}
-# {{{ Bounds2
+# {{{ Box2
 
-type Bounds2[T] = object
+type Box2[T] = object
   pMin*: Vec2[T]
   pMax*: Vec2[T]
 
 type
-  Bounds2f = Bounds2[FloatT]
-  Bounds2i = Bounds2[int]
+  Box2f = Box2[FloatT]
+  Box2i = Box2[int]
 
-proc bounds2f*(): Bounds2f {.inline.} =
-  Bounds2f(pMin: vec2f(Inf,    Inf),
-           pMax: vec2f(NegInf, NegInf))
+proc box2f*(): Box2f {.inline.} =
+  Box2f(pMin: vec2f(Inf,    Inf),
+        pMax: vec2f(NegInf, NegInf))
 
-proc bounds2f*(a, b: Vec2f): Bounds2f {.inline.} =
-  bounds2f(vec2f(min(a.x, b.x), min(a.y, b.y)),
-           vec2f(max(a.x, b.x), max(a.y, b.y)))
+proc box2f*(a, b: Vec2f): Box2f {.inline.} =
+  box2f(vec2f(min(a.x, b.x), min(a.y, b.y)),
+        vec2f(max(a.x, b.x), max(a.y, b.y)))
 
-proc bounds2f*(p: Vec2f): Bounds2f {.inline.} =
-  bounds2f(p, p)
+proc box2f*(p: Vec2f): Box2f {.inline.} =
+  box2f(p, p)
 
-proc bounds2i*(): Bounds2i {.inline.} =
+proc box2i*(): Box2i {.inline.} =
   let maxInt = high(int)
   let minInt = low(int)
-  Bounds2i(pMin: vec2i(maxInt, maxInt),
-           pMax: vec2i(minInt, minInt))
+  Box2i(pMin: vec2i(maxInt, maxInt),
+        pMax: vec2i(minInt, minInt))
 
-proc bounds2i*(a, b: Vec2i): Bounds2i {.inline.} =
-  bounds2i(vec2i(min(a.x, b.x), min(a.y, b.y)),
-           vec2i(max(a.x, b.x), max(a.y, b.y)))
+proc box2i*(a, b: Vec2i): Box2i {.inline.} =
+  box2i(vec2i(min(a.x, b.x), min(a.y, b.y)),
+        vec2i(max(a.x, b.x), max(a.y, b.y)))
 
-proc bounds2i*(p: Vec2i): Bounds2i {.inline.} =
-  bounds2i(p, p)
+proc box2i*(p: Vec2i): Box2i {.inline.} =
+  box2i(p, p)
 
-proc union*[T](a: Bounds2[T], p: Vec2[T]): Bounds2[T] {.inline.} =
-  Bounds2[T](pMin: vec2f(min(a.pMin.x, p.x),
-                         min(a.pMin.y, p.y)),
-             pMax: vec2f(max(a.pMax.x, p.x),
-                         max(a.pMax.y, p.y)))
+proc union*[T](a: Box2[T], p: Vec2[T]): Box2[T] {.inline.} =
+  Box2[T](pMin: vec2f(min(a.pMin.x, p.x),
+                      min(a.pMin.y, p.y)),
+          pMax: vec2f(max(a.pMax.x, p.x),
+                      max(a.pMax.y, p.y)))
 
-proc union*[T](a: Bounds2[T], b: Bounds2[T]): Bounds2[T] {.inline.} =
-  Bounds2[T](pMin: vec2f(min(a.pMin.x, b.pMin.x),
-                         min(a.pMin.y, b.pMin.y)),
-             pMax: vec2f(max(a.pMax.x, b.pMax.x),
-                         max(a.pMax.y, b.pMax.y)))
+proc union*[T](a: Box2[T], b: Box2[T]): Box2[T] {.inline.} =
+  Box2[T](pMin: vec2f(min(a.pMin.x, b.pMin.x),
+                      min(a.pMin.y, b.pMin.y)),
+          pMax: vec2f(max(a.pMax.x, b.pMax.x),
+                      max(a.pMax.y, b.pMax.y)))
 
-proc intersect*[T](a: Bounds2[T], b: Bounds2[T]): Bounds2[T] {.inline.} =
-  Bounds2[T](pMin: vec2f(max(a.pMin.x, b.pMin.x),
-                         max(a.pMin.y, b.pMin.y)),
-             pMax: vec2f(min(a.pMax.x, b.pMax.x),
-                         min(a.pMax.y, b.pMax.y)))
+proc intersect*[T](a: Box2[T], b: Box2[T]): Box2[T] {.inline.} =
+  Box2[T](pMin: vec2f(max(a.pMin.x, b.pMin.x),
+                      max(a.pMin.y, b.pMin.y)),
+          pMax: vec2f(min(a.pMax.x, b.pMax.x),
+                      min(a.pMax.y, b.pMax.y)))
 
 # }}}
-# {{{ Bounds3
+# {{{ Box3
 
-type Bounds3[T] = object
+type Box3[T] = object
   pMin*: Vec3[T]
   pMax*: Vec3[T]
 
 type
-  Bounds3f = Bounds3[FloatT]
-  Bounds3i = Bounds3[int]
+  Box3f = Box3[FloatT]
+  Box3i = Box3[int]
 
-proc bounds3f*(): Bounds3f {.inline.} =
-  Bounds3f(pMin: vec3f(Inf,    Inf,    Inf),
-           pMax: vec3f(NegInf, NegInf, NegInf))
+proc box3f*(): Box3f {.inline.} =
+  Box3f(pMin: vec3f(Inf,    Inf,    Inf),
+        pMax: vec3f(NegInf, NegInf, NegInf))
 
-proc bounds3f*(a, b: Vec3f): Bounds3f {.inline.} =
-  bounds3f(vec3f(min(a.x, b.x), min(a.y, b.y), min(a.z, b.z)),
-           vec3f(max(a.x, b.x), max(a.y, b.y), max(a.z, b.z)))
+proc box3f*(a, b: Vec3f): Box3f {.inline.} =
+  box3f(vec3f(min(a.x, b.x), min(a.y, b.y), min(a.z, b.z)),
+        vec3f(max(a.x, b.x), max(a.y, b.y), max(a.z, b.z)))
 
-proc bounds3i*(): Bounds3i {.inline.} =
+proc box3i*(): Box3i {.inline.} =
   let maxInt = high(int)
   let minInt = low(int)
-  Bounds3i(pMin: vec3i(maxInt, maxInt, maxInt),
-           pMax: vec3i(minInt, minInt, minInt))
+  Box3i(pMin: vec3i(maxInt, maxInt, maxInt),
+        pMax: vec3i(minInt, minInt, minInt))
 
-proc bounds3i*(a, b: Vec3i): Bounds3i {.inline.} =
-  bounds3i(vec3i(min(a.x, b.x), min(a.y, b.y), min(a.z, b.z)),
-           vec3i(max(a.x, b.x), max(a.y, b.y), max(a.z, b.z)))
+proc box3i*(a, b: Vec3i): Box3i {.inline.} =
+  box3i(vec3i(min(a.x, b.x), min(a.y, b.y), min(a.z, b.z)),
+        vec3i(max(a.x, b.x), max(a.y, b.y), max(a.z, b.z)))
 
-proc union*[T](a: Bounds3[T], p: Vec3[T]): Bounds3[T] {.inline.} =
-  Bounds3[T](pMin: vec3f(min(a.pMin.x, p.x),
-                         min(a.pMin.y, p.y),
-                         min(a.pMin.z, p.z)),
-             pMax: vec3f(max(a.pMax.x, p.x),
-                         max(a.pMax.y, p.y),
-                         max(a.pMax.z, p.z)))
+proc union*[T](a: Box3[T], p: Vec3[T]): Box3[T] {.inline.} =
+  Box3[T](pMin: vec3f(min(a.pMin.x, p.x),
+                      min(a.pMin.y, p.y),
+                      min(a.pMin.z, p.z)),
+          pMax: vec3f(max(a.pMax.x, p.x),
+                      max(a.pMax.y, p.y),
+                      max(a.pMax.z, p.z)))
 
-proc union*[T](a: Bounds3[T], b: Bounds3[T]): Bounds3[T] {.inline.} =
-  Bounds3[T](pMin: vec3f(min(a.pMin.x, b.pMin.x),
-                         min(a.pMin.y, b.pMin.y),
-                         min(a.pMin.z, b.pMin.z)),
-             pMax: vec3f(max(a.pMax.x, b.pMax.x),
-                         max(a.pMax.y, b.pMax.y),
-                         max(a.pMax.z, b.pMax.z)))
+proc union*[T](a: Box3[T], b: Box3[T]): Box3[T] {.inline.} =
+  Box3[T](pMin: vec3f(min(a.pMin.x, b.pMin.x),
+                      min(a.pMin.y, b.pMin.y),
+                      min(a.pMin.z, b.pMin.z)),
+          pMax: vec3f(max(a.pMax.x, b.pMax.x),
+                      max(a.pMax.y, b.pMax.y),
+                      max(a.pMax.z, b.pMax.z)))
 
-proc intersect*[T](a: Bounds3[T], b: Bounds3[T]): Bounds3[T] {.inline.} =
-  Bounds3[T](pMin: vec3f(max(a.pMin.x, b.pMin.x),
-                         max(a.pMin.y, b.pMin.y),
-                         max(a.pMin.z, b.pMin.z)),
-             pMax: vec3f(min(a.pMax.x, b.pMax.x),
-                         min(a.pMax.y, b.pMax.y),
-                         min(a.pMax.z, b.pMax.z)))
+proc intersect*[T](a: Box3[T], b: Box3[T]): Box3[T] {.inline.} =
+  Box3[T](pMin: vec3f(max(a.pMin.x, b.pMin.x),
+                      max(a.pMin.y, b.pMin.y),
+                      max(a.pMin.z, b.pMin.z)),
+          pMax: vec3f(min(a.pMax.x, b.pMax.x),
+                      min(a.pMax.y, b.pMax.y),
+                      min(a.pMax.z, b.pMax.z)))
 
 # }}}
 # {{{ Ray
