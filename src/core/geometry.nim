@@ -347,27 +347,27 @@ proc inverse(m: Mat4x4): Mat4x4 =
 # {{{ Transform
 
 type Transform* = object
-  t*, tinv*: Mat4x4
+  m*, mInv*: Mat4x4
 
-proc transform*(t: Mat4x4): Transform {.inline.} =
-  Transform(t: t, tinv: t.inverse)
+proc transform*(m: Mat4x4): Transform {.inline.} =
+  Transform(m: m, mInv: m.inverse)
 
-proc transform*(t: Mat4x4, tinv: Mat4x4): Transform {.inline.} =
-  Transform(t: t, tinv: tinv)
+proc transform*(m: Mat4x4, mInv: Mat4x4): Transform {.inline.} =
+  Transform(m: m, mInv: mInv)
 
 proc translate*(dx, dy, dz: FloatT): Transform =
   let
-    t = mat4x4([[FloatT(1), 0, 0, dx],
+    m = mat4x4([[FloatT(1), 0, 0, dx],
                 [FloatT(0), 1, 0, dy],
                 [FloatT(0), 0, 1, dz],
                 [FloatT(0), 0, 0,  1]])
 
-    tinv = mat4x4([[FloatT(1), 0, 0, -dx],
+    mInv = mat4x4([[FloatT(1), 0, 0, -dx],
                    [FloatT(0), 1, 0, -dy],
                    [FloatT(0), 0, 1, -dz],
                    [FloatT(0), 0, 0,   1]])
 
-  transform(t, tinv)
+  transform(m, mInv)
 
 
 proc scale*(sx, sy, sz: FloatT): Transform =
@@ -375,17 +375,17 @@ proc scale*(sx, sy, sz: FloatT): Transform =
   assert sy != 0
   assert sz != 0
   let
-    t = mat4x4([[FloatT(sx), 0,  0, 0],
+    m = mat4x4([[FloatT(sx), 0,  0, 0],
                 [FloatT(0), sy,  0, 0],
                 [FloatT(0),  0, sz, 0],
                 [FloatT(0),  0,  0, 1]])
 
-    tinv = mat4x4([[FloatT(1/sx),    0,    0, 0],
+    mInv = mat4x4([[FloatT(1/sx),    0,    0, 0],
                    [FloatT(0),    1/sy,    0, 0],
                    [FloatT(0),       0, 1/sz, 0],
                    [FloatT(0),       0,    0, 1]])
 
-  transform(t, tinv)
+  transform(m, mInv)
 
 
 proc scale*(s: FloatT): Transform =
@@ -408,8 +408,8 @@ proc box2f*(): Box2f {.inline.} =
         pMax: vec2f(NegInf, NegInf))
 
 proc box2f*(a, b: Vec2f): Box2f {.inline.} =
-  box2f(vec2f(min(a.x, b.x), min(a.y, b.y)),
-        vec2f(max(a.x, b.x), max(a.y, b.y)))
+  Box2f(pMin: vec2f(min(a.x, b.x), min(a.y, b.y)),
+        pMax: vec2f(max(a.x, b.x), max(a.y, b.y)))
 
 proc box2f*(p: Vec2f): Box2f {.inline.} =
   box2f(p, p)
@@ -421,8 +421,8 @@ proc box2i*(): Box2i {.inline.} =
         pMax: vec2i(minInt, minInt))
 
 proc box2i*(a, b: Vec2i): Box2i {.inline.} =
-  box2i(vec2i(min(a.x, b.x), min(a.y, b.y)),
-        vec2i(max(a.x, b.x), max(a.y, b.y)))
+  Box2i(pMin: vec2i(min(a.x, b.x), min(a.y, b.y)),
+        pMax: vec2i(max(a.x, b.x), max(a.y, b.y)))
 
 proc box2i*(p: Vec2i): Box2i {.inline.} =
   box2i(p, p)
@@ -449,11 +449,11 @@ proc overlaps*[T](a: Box2[T], b: Box2[T]): bool {.inline.} =
   (a.pMax.x >= b.pMin.x and a.pMin.x <= b.pMax.x and
    a.pMax.y >= b.pMin.y and a.pMin.y <= b.pMax.y)
 
-proc inside*[T](b: Box2[T], p: Vec2[T]): bool {.inline.} =
+proc inside*[T](p: Vec2[T], b: Box2[T]): bool {.inline.} =
   (p.x >= b.pMin.x and p.x <= b.pMax.x and
    p.y >= b.pMin.y and p.y <= b.pMax.y)
 
-proc insideExclusive*[T](b: Box2[T], p: Vec2[T]): bool {.inline.} =
+proc insideExclusive*[T](p: Vec2[T], b: Box2[T]): bool {.inline.} =
   (p.x >= b.pMin.x and p.x < b.pMax.x and
    p.y >= b.pMin.y and p.y < b.pMax.y)
 
@@ -465,7 +465,7 @@ proc diagonal*[T](b: Box2[T]): Vec2[T] {.inline.} =
   b.pMax - b.pMin
 
 proc maxExtent*[T](b: Box2[T]): int {.inline.} =
-  let d = diagonal
+  let d = b.diagonal
   if d.x > d.y: result = 0
   else: result = 1
 
@@ -474,15 +474,15 @@ proc area*[T](b: Box2[T]): T {.inline.} =
   d.x * d.y
 
 proc expand*[T,U](b: Box2[T], d: U): Box2[T] {.inline.} =
-  let delta = Vec2[T](x: d, y: d)
+  let delta = Vec2[T](x: T(d), y: T(d))
   Box2[T](pMin: b.pMin - delta,
           pMax: b.pMax + delta)
 
-proc lerp*[T,U](b: Box2[T], t: FloatT): Vec2[T] {.inline.} =
+proc lerp*[T](b: Box2[T], t: FloatT): Vec2[T] {.inline.} =
   lerp(b.pMin, b.pMax, t)
 
 proc offset*[T](b: Box2[T], p: Vec2[T]): Vec2[T] {.inline.} =
-  let o = p - b.pMin
+  var o = p - b.pMin
   if b.pMax.x > b.pMin.x: o.x /= b.pMax.x - b.pMin.x
   if b.pMax.y > b.pMin.y: o.y /= b.pMax.y - b.pMin.y
   result = o
@@ -503,8 +503,8 @@ proc box3f*(): Box3f {.inline.} =
         pMax: vec3f(NegInf, NegInf, NegInf))
 
 proc box3f*(a, b: Vec3f): Box3f {.inline.} =
-  box3f(vec3f(min(a.x, b.x), min(a.y, b.y), min(a.z, b.z)),
-        vec3f(max(a.x, b.x), max(a.y, b.y), max(a.z, b.z)))
+  Box3f(pMin: vec3f(min(a.x, b.x), min(a.y, b.y), min(a.z, b.z)),
+        pMax: vec3f(max(a.x, b.x), max(a.y, b.y), max(a.z, b.z)))
 
 proc box3i*(): Box3i {.inline.} =
   let maxInt = high(int)
@@ -513,8 +513,8 @@ proc box3i*(): Box3i {.inline.} =
         pMax: vec3i(minInt, minInt, minInt))
 
 proc box3i*(a, b: Vec3i): Box3i {.inline.} =
-  box3i(vec3i(min(a.x, b.x), min(a.y, b.y), min(a.z, b.z)),
-        vec3i(max(a.x, b.x), max(a.y, b.y), max(a.z, b.z)))
+  Box3i(pMin: vec3i(min(a.x, b.x), min(a.y, b.y), min(a.z, b.z)),
+        pMax: vec3i(max(a.x, b.x), max(a.y, b.y), max(a.z, b.z)))
 
 proc union*[T](a: Box3[T], p: Vec3[T]): Box3[T] {.inline.} =
   Box3[T](pMin: vec3f(min(a.pMin.x, p.x),
@@ -545,12 +545,12 @@ proc overlaps*[T](a: Box3[T], b: Box3[T]): bool {.inline.} =
    a.pMax.y >= b.pMin.y and a.pMin.y <= b.pMax.z and
    a.pMax.z >= b.pMin.z and a.pMin.z <= b.pMax.z)
 
-proc inside*[T](b: Box3[T], p: Vec3[T]): bool {.inline.} =
+proc inside*[T](p: Vec3[T], b: Box3[T]): bool {.inline.} =
   (p.x >= b.pMin.x and p.x <= b.pMax.x and
    p.y >= b.pMin.y and p.y <= b.pMax.y and
    p.z >= b.pMin.z and p.z <= b.pMax.z)
 
-proc insideExclusive*[T](b: Box3[T], p: Vec3[T]): bool {.inline.} =
+proc insideExclusive*[T](p: Vec3[T], b: Box3[T]): bool {.inline.} =
   (p.x >= b.pMin.x and p.x < b.pMax.x and
    p.y >= b.pMin.y and p.y < b.pMax.y and
    p.z >= b.pMin.z and p.z < b.pMax.z)
@@ -586,7 +586,7 @@ proc lerp*[T,U](b: Box3[T], t: FloatT): Vec3[T] {.inline.} =
   lerp(b.pMin, b.pMax, t)
 
 proc offset*[T](b: Box3[T], p: Vec3[T]): Vec3[T] {.inline.} =
-  let o = p - b.pMin
+  var o = p - b.pMin
   if b.pMax.x > b.pMin.x: o.x /= b.pMax.x - b.pMin.x
   if b.pMax.y > b.pMin.y: o.y /= b.pMax.y - b.pMin.y
   if b.pMax.z > b.pMin.z: o.z /= b.pMax.z - b.pMin.z
@@ -805,6 +805,43 @@ when isMainModule:
       assert false
     except AssertionError:
       assert true
+
+  # }}}
+  # {{{ Box2
+  block:
+    let b1 = box2f(vec2f(3,1), vec2f(-2,5))
+    assert b1.pMin == vec2f(-2,1)
+    assert b1.pMax == vec2f(3,5)
+
+    let b2 = box2f(vec2f(1,2))
+    assert b2.pMin == vec2f(1,2)
+    assert b2.pMax == vec2f(1,2)
+
+    assert box2f().union(vec2f(1,2)) == box2f(vec2f(1,2), vec2f(1,2))
+    assert b2.union(vec2f(2,3)) == box2f(vec2f(1,2), vec2f(2,3))
+    assert b1.union(box2f(vec2f(0,6),
+                          vec2f(8,-7))) == box2f(vec2f(-2,-7), vec2f(8,6))
+
+    let b3 = box2f(vec2f(0,4), vec2f(2,6))
+    assert b1.intersect(b3) == box2f(vec2f(0,4), vec2f(2,5))
+
+    assert b1.overlaps(box2f(vec2f(2,3), vec2f(4,7))) == true
+    assert b1.overlaps(box2f(vec2f(-3,-1), vec2f(-1,1))) == true
+    assert b1.overlaps(box2f(vec2f(-3,-1), vec2f(-1,0))) == false
+    assert b1.overlaps(box2f(vec2f(4,-1), vec2f(5,0))) == false
+    assert b1.overlaps(box2f(vec2f(2,-1), vec2f(5,0))) == false
+
+    assert vec2f(0,1).inside(b1) == true
+    assert vec2f(0.9,4.9).insideExclusive(b1) == true
+    assert vec2f(1,5).insideExclusive(b1) == false
+
+    assert b1.center == vec2f(0.5, 3)
+    assert b1.diagonal == vec2f(5,4)
+    assert b1.maxExtent == 0
+    assert b1.area == 20
+    assert b1.expand(1) == box2f(vec2f(-3,0), vec2f(4,6))
+    assert lerp(b1, 0.25) == vec2f(-0.75, 2)
+    assert b1.offset(vec2f(-0.75, 4)) == vec2f(0.25, 0.75)
 
   # }}}
   # {{{ Mat4x4
