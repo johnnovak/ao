@@ -506,6 +506,9 @@ proc box3f*(a, b: Vec3f): Box3f {.inline.} =
   Box3f(pMin: vec3f(min(a.x, b.x), min(a.y, b.y), min(a.z, b.z)),
         pMax: vec3f(max(a.x, b.x), max(a.y, b.y), max(a.z, b.z)))
 
+proc box3f*(p: Vec3f): Box3f {.inline.} =
+  box3f(p, p)
+
 proc box3i*(): Box3i {.inline.} =
   let maxInt = high(int)
   let minInt = low(int)
@@ -515,6 +518,9 @@ proc box3i*(): Box3i {.inline.} =
 proc box3i*(a, b: Vec3i): Box3i {.inline.} =
   Box3i(pMin: vec3i(min(a.x, b.x), min(a.y, b.y), min(a.z, b.z)),
         pMax: vec3i(max(a.x, b.x), max(a.y, b.y), max(a.z, b.z)))
+
+proc box3i*(p: Vec3i): Box3i {.inline.} =
+  box3i(p, p)
 
 proc union*[T](a: Box3[T], p: Vec3[T]): Box3[T] {.inline.} =
   Box3[T](pMin: vec3f(min(a.pMin.x, p.x),
@@ -556,7 +562,7 @@ proc insideExclusive*[T](p: Vec3[T], b: Box3[T]): bool {.inline.} =
    p.z >= b.pMin.z and p.z < b.pMax.z)
 
 proc center*[T](b: Box3[T]): Vec3[T] {.inline.} =
-  Vec2[T](x: T((b.pMin.x + b.pMax.x) / 2),
+  Vec3[T](x: T((b.pMin.x + b.pMax.x) / 2),
           y: T((b.pMin.y + b.pMax.y) / 2),
           z: T((b.pMin.z + b.pMax.z) / 2))
 
@@ -564,7 +570,7 @@ proc diagonal*[T](b: Box3[T]): Vec3[T] {.inline.} =
   b.pMax - b.pMin
 
 proc maxExtent*[T](b: Box3[T]): int {.inline.} =
-  let d = diagonal
+  let d = b.diagonal
   if d.x > d.y and d.x > d.z: result = 0
   elif d.y > d.z: result = 1
   else: result = 2
@@ -578,11 +584,11 @@ proc volume*[T](b: Box3[T]): T {.inline.} =
   d.x * d.y * d.z
 
 proc expand*[T,U](b: Box3[T], d: U): Box3[T] {.inline.} =
-  let delta = Vec3[T](x: d, y: d, z: d)
+  let delta = Vec3[T](x: T(d), y: T(d), z: T(d))
   Box3[T](pMin: b.pMin - delta,
           pMax: b.pMax + delta)
 
-proc lerp*[T,U](b: Box3[T], t: FloatT): Vec3[T] {.inline.} =
+proc lerp*[T](b: Box3[T], t: FloatT): Vec3[T] {.inline.} =
   lerp(b.pMin, b.pMax, t)
 
 proc offset*[T](b: Box3[T], p: Vec3[T]): Vec3[T] {.inline.} =
@@ -842,6 +848,45 @@ when isMainModule:
     assert b1.expand(1) == box2f(vec2f(-3,0), vec2f(4,6))
     assert lerp(b1, 0.25) == vec2f(-0.75, 2)
     assert b1.offset(vec2f(-0.75, 4)) == vec2f(0.25, 0.75)
+
+  # }}}
+  # {{{ Box3
+  block:
+    let b1 = box3f(vec3f(3,1,4), vec3f(-2,5,-1))
+    assert b1.pMin == vec3f(-2,1,-1)
+    assert b1.pMax == vec3f(3,5,4)
+
+    let b2 = box3f(vec3f(1,2,3))
+    assert b2.pMin == vec3f(1,2,3)
+    assert b2.pMax == vec3f(1,2,3)
+
+    assert box3f().union(vec3f(1,2,3)) == box3f(vec3f(1,2,3), vec3f(1,2,3))
+    assert b2.union(vec3f(2,3,4)) == box3f(vec3f(1,2,3), vec3f(2,3,4))
+    assert b1.union(box3f(vec3f(0,6,-3),
+                          vec3f(8,-7,-2))) == box3f(vec3f(-2,-7,-3),
+                                                    vec3f(8,6,4))
+
+    let b3 = box3f(vec3f(0,4,3), vec3f(2,6,7))
+    assert b1.intersect(b3) == box3f(vec3f(0,4,3), vec3f(2,5,4))
+
+    assert b1.overlaps(box3f(vec3f(2,3,0), vec3f(4,7,5))) == true
+    assert b1.overlaps(box3f(vec3f(-3,-1,4), vec3f(-1,1,3))) == true
+    assert b1.overlaps(box3f(vec3f(-3,-1,-3), vec3f(-1,0,-1))) == false
+    assert b1.overlaps(box3f(vec3f(4,-1,1), vec3f(5,0,2))) == false
+    assert b1.overlaps(box3f(vec3f(2,-1,5), vec3f(5,0,6))) == false
+
+    assert vec3f(0,1,3).inside(b1) == true
+    assert vec3f(1, 4.9, 3.9).insideExclusive(b1) == true
+    assert vec3f(1,4,4).insideExclusive(b1) == false
+
+    assert b1.center == vec3f(0.5, 3, 1.5)
+    assert b1.diagonal == vec3f(5,4,5)
+    assert b1.maxExtent == 2
+    assert b1.area == 130
+    assert b1.volume == 100
+    assert b1.expand(1) == box3f(vec3f(-3,0,-2), vec3f(4,6,5))
+    assert lerp(b1, 0.25) == vec3f(-0.75, 2, 0.25)
+    assert b1.offset(vec3f(-0.75, 4, 1.5)) == vec3f(0.25, 0.75, 0.5)
 
   # }}}
   # {{{ Mat4x4
