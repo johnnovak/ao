@@ -6,8 +6,8 @@ when defined(useFloat64):
 else:
   type FloatT* = float32
 
-template f32[T: SomeNumber](x: T): float32 = float32(x)
-template f64[T: SomeNumber](x: T): float64 = float64(x)
+template f32*[T: SomeNumber](x: T): float32 = float32(x)
+template f64*[T: SomeNumber](x: T): float64 = float64(x)
 
 const
   NegZero* = -1e-1000
@@ -23,6 +23,9 @@ const
 
 template isNaN*[T: SomeReal](x: T): bool =
   classify(x) == fcNan
+
+template isNaN*[T: SomeInteger](x: T): bool =
+  false
 
 proc isCloseFn[T: SomeReal](a, b: T, maxRelDiff: T): bool =
   let
@@ -72,7 +75,8 @@ template sprintf*(format: cstring, args: varargs[untyped]): string =
 when isMainModule:
   assert $NegZero == "-0.0"
 
-  assert isNaN(0/0)
+  assert isNaN(0'f32/0'f32)
+  assert(not isNaN(1'i32))
 
   assert lerp(FloatT(1.5), 3.3, 0.2).isClose(FloatT(1.86))
   assert lerp(FloatT(-3.3), 10.5, 0.75).isClose(FloatT(7.05))

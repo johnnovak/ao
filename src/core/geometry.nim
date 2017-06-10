@@ -13,7 +13,7 @@ type
   Vec2f* = Vec2[FloatT]
   Vec2i* = Vec2[int]
 
-proc hasNaNs*(a: Vec2f): bool {.inline.} =
+proc hasNaNs*[T](a: Vec2[T]): bool {.inline.} =
   isNaN(a.x) or isNaN(a.y)
 
 proc vec2f*(x, y: FloatT): Vec2f {.inline.} =
@@ -105,10 +105,10 @@ proc dot*[T](a, b: Vec2[T]): T {.inline.} =
 proc absDot*[T](a, b: Vec2[T]): T {.inline.} =
   abs(dot(a, b))
 
-proc len*[T](a: Vec2[T]): T {.inline.} =
+proc len*[T](a: Vec2[T]): FloatT {.inline.} =
   sqrt(a.x * a.x + a.y * a.y)
 
-proc len2*[T](a: Vec2[T]): T {.inline.} =
+proc len2*[T](a: Vec2[T]): FloatT {.inline.} =
   let r = len(a)
   r * r
 
@@ -573,7 +573,7 @@ proc t*(r: Ray, t: FloatT): Vec3f {.inline.} =
 # {{{ Tests
 
 when isMainModule:
-  # {{{ Vec2
+  # {{{ Vec2f
   block:
     let
       a = vec2f(1, 2)
@@ -666,7 +666,94 @@ when isMainModule:
       assert true
 
   # }}}
-  # {{{ Vec3
+  # {{{ Vec2i
+  block:
+    let
+      a = vec2i(1, 2)
+      b = vec2i(3, 5)
+
+    assert a.x == 1
+    assert a.y == 2
+
+    assert a.s == 1
+    assert a.t == 2
+
+    assert a.r == 1
+    assert a.g == 2
+
+    assert a[0] == 1
+    assert a[1] == 2
+
+    assert a + b == vec2i(4, 7)
+    assert a - b == vec2i(-2, -3)
+    assert a * 2 == vec2i(2, 4)
+    assert 2 * a == vec2i(2, 4)
+    assert a / 2 == vec2i(0.5, 1)
+
+    try:
+      discard a / 0
+      assert false
+    except AssertionError:
+      assert true
+
+    assert a.dot(b) == 13
+    assert a.absDot(vec2i(-3,-5)) == 13
+    assert len(a) == sqrt(FloatT(5))
+    assert len2(a).isClose(FloatT(5))
+    assert vec2i(10,0).norm == vec2i(1,0)
+    assert min(a) == 1
+    assert max(a) == 2
+    assert min(vec2i(-2,5), vec2i(1,3)) == vec2i(-2,3)
+    assert max(vec2i(-2,5), vec2i(1,3)) == vec2i(1,5)
+    assert abs(vec2i(-2,3)) == vec2i(2,3)
+    assert floor(a) == a
+    assert ceil(a) == a
+    assert clamp(vec2i(-2, 2), -1, 3) == vec2i(-1, 2)
+    assert lerp(a, b, 0.25) == vec2i(1, 2)
+
+  block:
+    var a = vec2i(1, 2)
+    let b = vec2i(3, 5)
+
+    a[0] = 8
+    a[1] = 9
+    assert a.x == 8
+    assert a.y == 9
+
+    a.s = 5
+    a.t = 6
+    assert a.x == 5
+    assert a.y == 6
+
+    a.r = 3
+    a.g = 4
+    assert a.x == 3
+    assert a.y == 4
+
+    a = vec2i(1, 2)
+    a += b
+    assert a == vec2i(4, 7)
+
+    a = vec2i(1, 2)
+    a -= b
+    assert a == vec2i(-2, -3)
+
+    a = vec2i(1, 2)
+    a *= 2
+    assert a == vec2i(2, 4)
+
+    a = vec2i(1, 2)
+    a /= 2
+    assert a == vec2i(0.5, 1)
+
+    try:
+      a /= 0
+      assert false
+    except AssertionError:
+      assert true
+
+  # }}}
+  # {{{ Vec3f
   block:
     let
       a = vec3f(1, 2, 3)
@@ -770,7 +857,7 @@ when isMainModule:
       assert true
 
   # }}}
-  # {{{ Box2
+  # {{{ Box2f
   block:
     let b1 = box2f(vec2f(3,1), vec2f(-2,5))
     assert b1.pMin == vec2f(-2,1)
@@ -813,7 +900,7 @@ when isMainModule:
     assert b1.offset(vec2f(-0.75, 4)) == vec2f(0.25, 0.75)
 
   # }}}
-  # {{{ Box3
+  # {{{ Box3f
   block:
     let b1 = box3f(vec3f(3,1,4), vec3f(-2,5,-1))
     assert b1.pMin == vec3f(-2,1,-1)
