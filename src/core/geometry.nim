@@ -780,7 +780,7 @@ when isMainModule:
 
     assert a.dot(b) == 34
     assert a.absDot(vec3f(-3,-5,-7)) == 34
-    # TODO assert a.cross(b) == 0
+    assert a.cross(b) == vec3f(-1,2,-1)
     assert len(a) == sqrt(FloatT(14))
     assert len2(a).isClose(FloatT(14))
     assert vec3f(-10,0,0).norm == vec3f(-1,0,0)
@@ -878,7 +878,7 @@ when isMainModule:
 
     assert a.dot(b) == 34
     assert a.absDot(vec3i(-3,-5,-7)) == 34
-    # TODO assert a.cross(b) == 0
+    assert a.cross(b) == vec3i(-1,2,-1)
     assert len(a) == sqrt(FloatT(14))
     assert len2(a).isClose(FloatT(14))
     assert vec3i(-10,0,0).norm == vec3i(-1,0,0)
