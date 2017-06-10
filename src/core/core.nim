@@ -11,13 +11,15 @@ template f64[T](x: T): float64 = float64(x)
 
 const
   NegZero* = -1e-1000
+
   ShadowEpsilon* = 0.0001
-  InvPi* = 0.31830988618379067154
-  Inv2Pi* = 0.15915494309189533577
-  Inv4Pi* = 0.07957747154594766788
+
+  InvPi*   = 0.31830988618379067154
+  Inv2Pi*  = 0.15915494309189533577
+  Inv4Pi*  = 0.07957747154594766788
   PiOver2* = 1.57079632679489661923
   PiOver4* = 0.78539816339744830961
-  Sqrt2* = 1.41421356237309504880
+  Sqrt2*   = 1.41421356237309504880
 
 template isNaN*[T: float32|float64](x: T): bool =
   classify(x) == fcNan
@@ -58,6 +60,8 @@ proc solveQuadratic*(a, b, c, delta: float64): (float64, float64) {.inline.} =
     t2 = c / (a*t1)
   result = (t1, t2)
 
+proc printf*(format: cstring) {.header: "<stdio.h>", varargs.}
+
 
 when isMainModule:
   assert $NegZero == "-0.0"
@@ -65,7 +69,7 @@ when isMainModule:
   assert isNaN(0/0)
 
   assert lerp(1.5, 3.3, 0.2) ==~ 1.86
-  assert lerp(-3.3, 10.5, 0.75) ==~ 2.1
+  assert lerp(-3.3, 10.5, 0.75) ==~ 7.05
 
   block: # isClose() tests
     assert 15'f32.isClose(15.00001'f32)
@@ -98,5 +102,7 @@ when isMainModule:
 
     assert x1 ==~ 1.786737589984535
     assert x2 ==~ 1.149782767465722e-08
+
+  printf("stuff: %f\n", 123.4)
 
 # vim: et:ts=2:sw=2:fdm=marker
