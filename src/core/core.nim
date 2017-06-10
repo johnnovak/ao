@@ -30,17 +30,11 @@ proc isCloseFn[T: float32|float64](a, b: T, maxRelDiff: T): bool =
     largest = max(abs(a), abs(b))
   result = diff <= largest * maxRelDiff
 
-proc isClose*(a, b: float32, maxRelDiff: float32 = 1e-6): bool =
+proc isClose*(a, b: float32, maxRelDiff: float32 = 1e-5): bool =
   isCloseFn(a, b, maxRelDiff)
 
 proc isClose*(a, b: float64, maxRelDiff: float64 = 1e-10): bool =
   isCloseFn(a, b, maxRelDiff)
-
-proc `==~`*[T: float32|float64](a, b: T): bool =
-  isClose(a, b)
-
-proc `!=~`*[T: float32|float64](a, b: T): bool =
-  not isClose(a, b)
 
 proc sgn*[T: int8|int16|int32|int64|float32|float64](a: T): int {.inline.} =
   cast[int](T(0) < a) - cast[int](a < T(0))
@@ -80,16 +74,12 @@ when isMainModule:
 
   assert isNaN(0/0)
 
-  assert lerp(1.5, 3.3, 0.2) ==~ 1.86
-  assert lerp(-3.3, 10.5, 0.75) ==~ 7.05
+  assert lerp(1.5, 3.3, 0.2).isClose(1.86'f32)
+  assert lerp(-3.3, 10.5, 0.75).isClose(7.05'f32)
 
   block: # isClose() tests
     assert 15'f32.isClose(15.00001'f32)
     assert 15'f64.isClose(15.000000001'f64)
-    assert 15'f32 ==~ 15.00001'f32
-    assert 15'f64 ==~ 15.000000001'f64
-    assert 15'f64 !=~ 15.00001'f64
-    assert 15.0 !=~ 15.1
 
   block: # sgn() tests
     assert sgn(1'i8) == 1
@@ -112,8 +102,8 @@ when isMainModule:
       delta = quadraticDelta(a, b, c)
       (x1, x2) = solveQuadratic(a, b, c, delta)
 
-    assert x1 ==~ 1.786737589984535
-    assert x2 ==~ 1.149782767465722e-08
+    assert x1.isClose(1.786737589984535)
+    assert x2.isClose(1.149782767465722e-08)
 
   var s = sprintf("stuff: %f", 123.4)
   assert s == "stuff: 123.400000"

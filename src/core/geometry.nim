@@ -6,7 +6,7 @@ import math
 # {{{ Vec2
 
 # TODO byref pragma?
-type Vec2[T] = object
+type Vec2*[T] = object
   x*, y*: T
 
 type
@@ -34,6 +34,9 @@ proc g*[T](a: Vec2[T]): T {.inline.} = a.y
 
 proc `r=`*[T](a: var Vec2[T], r: T) {.inline.} = a.x = r
 proc `g=`*[T](a: var Vec2[T], g: T) {.inline.} = a.y = g
+
+proc `isClose`*[T](a, b: Vec2[T], maxRelDiff = 0.0001): bool {.inline.} =
+  a.x.isClose(b.x, maxRelDiff) and a.y.isClose(b.y, maxRelDiff)
 
 proc `[]`*[T](a: Vec2[T], i: int): T {.inline.} =
   assert(i >= 0 and i <= 1)
@@ -150,7 +153,7 @@ proc lerp*[T](a, b: Vec2[T], t: FloatT): Vec2[T] {.inline.} =
 # {{{ Vec3
 
 # TODO byref pragma?
-type Vec3[T] = object
+type Vec3*[T] = object
   x*, y*, z*: T
 
 type
@@ -182,6 +185,11 @@ proc b*[T](a: Vec3[T]): T {.inline.} = a.z
 proc `r=`*[T](a: var Vec3[T], r: T) {.inline.} = a.x = r
 proc `g=`*[T](a: var Vec3[T], g: T) {.inline.} = a.y = g
 proc `b=`*[T](a: var Vec3[T], b: T) {.inline.} = a.z = b
+
+proc `isClose`*[T](a, b: Vec3[T], maxRelDiff = 0.0001): bool {.inline.} =
+  (a.x.isClose(b.x, maxRelDiff) and
+   a.y.isClose(b.y, maxRelDiff) and
+   a.z.isClose(b.z, maxRelDiff))
 
 proc `[]`*[T](a: Vec3[T], i: int): T {.inline.} =
   assert(i >= 0 and i <= 2)
