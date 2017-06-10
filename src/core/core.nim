@@ -6,8 +6,8 @@ when defined(useFloat64):
 else:
   type FloatT* = float32
 
-template f32[T](x: T): float32 = float32(x)
-template f64[T](x: T): float64 = float64(x)
+template f32[T: SomeNumber](x: T): float32 = float32(x)
+template f64[T: SomeNumber](x: T): float64 = float64(x)
 
 const
   NegZero* = -1e-1000
@@ -39,7 +39,7 @@ proc isClose*(a, b: float64, maxRelDiff: float64 = 1e-10): bool =
 proc sgn*[T: SomeNumber](a: T): int {.inline.} =
   cast[int](T(0) < a) - cast[int](a < T(0))
 
-proc modulo*[T](x: T): T {.inline.} =
+proc modulo*[T: SomeReal](x: T): T {.inline.} =
   abs(x - floor(x))
 
 proc lerp*(a, b, t: FloatT): FloatT {.inline.} =
@@ -74,8 +74,8 @@ when isMainModule:
 
   assert isNaN(0/0)
 
-  assert lerp(1.5, 3.3, 0.2).isClose(1.86'f32)
-  assert lerp(-3.3, 10.5, 0.75).isClose(7.05'f32)
+  assert lerp(FloatT(1.5), 3.3, 0.2).isClose(FloatT(1.86))
+  assert lerp(FloatT(-3.3), 10.5, 0.75).isClose(FloatT(7.05))
 
   block: # isClose() tests
     assert 15'f32.isClose(15.00001'f32)

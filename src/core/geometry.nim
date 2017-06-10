@@ -593,7 +593,7 @@ when isMainModule:
     assert a.dot(b) == 13
     assert a.absDot(vec2f(-3,-5)) == 13
     assert len(a) == sqrt(FloatT(5))
-    assert len2(a) == FloatT(5)
+    assert len2(a).isClose(FloatT(5))
     assert vec2f(10,0).norm == vec2f(1,0)
     assert min(a) == 1
     assert max(a) == 2
