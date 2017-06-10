@@ -87,8 +87,8 @@ proc `/`*[T,U](a: Vec2[T], d: U): Vec2[T] {.inline.} =
   assert(not isNaN(T(d)))
   assert(d != 0)
   let s = 1 / float64(d)
-  Vec2[T](x: a.x * s,
-          y: a.y * s)
+  Vec2[T](x: T(FloatT(a.x) * s),
+          y: T(FloatT(a.y) * s))
 
 proc `/=`*[T,U](a: var Vec2[T], d: U) {.inline.} =
   assert(not isNaN(T(d)))
@@ -106,7 +106,7 @@ proc absDot*[T](a, b: Vec2[T]): T {.inline.} =
   abs(dot(a, b))
 
 proc len*[T](a: Vec2[T]): FloatT {.inline.} =
-  sqrt(a.x * a.x + a.y * a.y)
+  sqrt(FloatT(a.x * a.x + a.y * a.y))
 
 proc len2*[T](a: Vec2[T]): FloatT {.inline.} =
   let r = len(a)
@@ -160,7 +160,7 @@ type
   Vec3f* = Vec3[FloatT]
   Vec3i* = Vec3[int]
 
-proc hasNaNs*(a: Vec3f): bool {.inline.} =
+proc hasNaNs*[T](a: Vec3[T]): bool {.inline.} =
   isNaN(a.x) or isNaN(a.y) or isNaN(a.z)
 
 proc vec3f*(x, y, z: FloatT): Vec3f {.inline.} =
@@ -249,9 +249,9 @@ proc `/`*[T,U](a: Vec3[T], d: U): Vec3[T] {.inline.} =
   assert(not isNaN(T(d)))
   assert(d != 0)
   let s = 1 / float64(d)
-  Vec3[T](x: a.x * s,
-          y: a.y * s,
-          z: a.z * s)
+  Vec3[T](x: T(FloatT(a.x) * s),
+          y: T(FloatT(a.y) * s),
+          z: T(FloatT(a.z) * s))
 
 proc `/=`*[T,U](a: var Vec3[T], d: U) {.inline.} =
   assert(not isNaN(T(d)))
@@ -277,7 +277,7 @@ proc cross*[T](a, b: Vec3[T]): Vec3[T] {.inline.} =
           z: a.x * b.y - a.y * b.x)
 
 proc len*[T](a: Vec3[T]): FloatT {.inline.} =
-  sqrt(a.x * a.x + a.y * a.y + a.z * a.z)
+  sqrt(FloatT(a.x * a.x + a.y * a.y + a.z * a.z))
 
 proc len2*[T](a: Vec3[T]): FloatT {.inline.} =
   let r = len(a)
@@ -286,10 +286,10 @@ proc len2*[T](a: Vec3[T]): FloatT {.inline.} =
 proc norm*[T](a: Vec3[T]): Vec3[T] {.inline.} =
   a / a.len
 
-proc min*[T](a: Vec3[T]): FloatT {.inline.} =
+proc min*[T](a: Vec3[T]): T {.inline.} =
   min(min(a.x, a.y), a.z)
 
-proc max*[T](a: Vec3[T]): FloatT {.inline.} =
+proc max*[T](a: Vec3[T]): T {.inline.} =
   max(max(a.x, a.y), a.z)
 
 proc min*[T](a, b: Vec3[T]): Vec3[T] {.inline.} =
@@ -688,7 +688,7 @@ when isMainModule:
     assert a - b == vec2i(-2, -3)
     assert a * 2 == vec2i(2, 4)
     assert 2 * a == vec2i(2, 4)
-    assert a / 2 == vec2i(0.5, 1)
+    assert a / 2 == vec2i(0, 1)
 
     try:
       discard a / 0
@@ -706,8 +706,6 @@ when isMainModule:
     assert min(vec2i(-2,5), vec2i(1,3)) == vec2i(-2,3)
     assert max(vec2i(-2,5), vec2i(1,3)) == vec2i(1,5)
     assert abs(vec2i(-2,3)) == vec2i(2,3)
-    assert floor(a) == a
-    assert ceil(a) == a
     assert clamp(vec2i(-2, 2), -1, 3) == vec2i(-1, 2)
     assert lerp(a, b, 0.25) == vec2i(1, 2)
 
@@ -741,16 +739,6 @@ when isMainModule:
     a = vec2i(1, 2)
     a *= 2
     assert a == vec2i(2, 4)
-
-    a = vec2i(1, 2)
-    a /= 2
-    assert a == vec2i(0.5, 1)
-
-    try:
-      a /= 0
-      assert false
-    except AssertionError:
-      assert true
 
   # }}}
   # {{{ Vec3f
@@ -797,7 +785,7 @@ when isMainModule:
     assert a.absDot(vec3f(-3,-5,-7)) == 34
     # TODO assert a.cross(b) == 0
     assert len(a) == sqrt(FloatT(14))
-    assert abs(len2(a) - FloatT(14)) < 0.00001  # TODO comparison helper
+    assert len2(a).isClose(FloatT(14))
     assert vec3f(-10,0,0).norm == vec3f(-1,0,0)
     assert min(a) == 1
     assert max(a) == 3
@@ -855,6 +843,92 @@ when isMainModule:
       assert false
     except AssertionError:
       assert true
+
+  # }}}
+  # {{{ Vec3i
+  block:
+    let
+      a = vec3i(1, 2, 3)
+      b = vec3i(3, 5, 7)
+
+    assert a.x == 1
+    assert a.y == 2
+    assert a.z == 3
+
+    assert a.s == 1
+    assert a.t == 2
+    assert a.u == 3
+
+    assert a.r == 1
+    assert a.g == 2
+    assert a.b == 3
+
+    assert a[0] == 1
+    assert a[1] == 2
+    assert a[2] == 3
+
+    assert a + b == vec3i(4, 7, 10)
+    assert a - b == vec3i(-2, -3, -4)
+    assert a * 2 == vec3i(2, 4, 6)
+    assert 2 * a == vec3i(2, 4, 6)
+    assert a / 2 == vec3i(0, 1, 1)
+
+    try:
+      discard a / 0
+      assert false
+    except AssertionError:
+      assert true
+
+    assert a.dot(b) == 34
+    assert a.absDot(vec3i(-3,-5,-7)) == 34
+    # TODO assert a.cross(b) == 0
+    assert len(a) == sqrt(FloatT(14))
+    assert len2(a).isClose(FloatT(14))
+    assert vec3i(-10,0,0).norm == vec3i(-1,0,0)
+    assert min(a) == 1
+    assert max(a) == 3
+    assert min(vec3i(-2,5,7), vec3i(1,3,-5)) == vec3i(-2,3,-5)
+    assert max(vec3i(-2,5,7), vec3i(1,3,-5)) == vec3i(1,5,7)
+    assert abs(vec3i(-2,3,0)) == vec3i(2,3,0)
+    assert clamp(vec3i(-2, 0, 1), -1, 1) == vec3i(-1, 0, 1)
+    assert lerp(a, b, 0.25) == vec3i(1, 2, 4)
+
+  block:
+    var a = vec3i(1, 2, 3)
+    let b = vec3i(3, 5, 7)
+
+    a[0] = 3
+    a[1] = 4
+    a[2] = 5
+    assert a.x == 3
+    assert a.y == 4
+    assert a.z == 5
+
+    a.s = 9
+    a.t = 10
+    a.u = 11
+    assert a.x == 9
+    assert a.y == 10
+    assert a.z == 11
+
+    a.r = 6
+    a.g = 7
+    a.b = 8
+    assert a.r == 6
+    assert a.g == 7
+    assert a.b == 8
+
+    a = vec3i(1, 2, 3)
+    a += b
+    assert a == vec3i(4, 7, 10)
+
+    a = vec3i(1, 2, 3)
+    a -= b
+    assert a == vec3i(-2, -3, -4)
+
+    a = vec3i(1, 2, 3)
+    a *= 2
+    assert a == vec3i(2, 4, 6)
 
   # }}}
   # {{{ Box2f
