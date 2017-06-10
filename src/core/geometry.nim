@@ -22,18 +22,6 @@ proc vec2f*(x, y: FloatT): Vec2f {.inline.} =
 proc vec2i*(x, y: int): Vec2i {.inline.} =
   Vec2[int](x: x, y: y)
 
-proc s*[T](a: Vec2[T]): T {.inline.} = a.x
-proc t*[T](a: Vec2[T]): T {.inline.} = a.y
-
-proc `s=`*[T](a: var Vec2[T], s: T) {.inline.} = a.x = s
-proc `t=`*[T](a: var Vec2[T], t: T) {.inline.} = a.y = t
-
-proc r*[T](a: Vec2[T]): T {.inline.} = a.x
-proc g*[T](a: Vec2[T]): T {.inline.} = a.y
-
-proc `r=`*[T](a: var Vec2[T], r: T) {.inline.} = a.x = r
-proc `g=`*[T](a: var Vec2[T], g: T) {.inline.} = a.y = g
-
 proc `isClose`*[T](a, b: Vec2[T], maxRelDiff = 0.0001): bool {.inline.} =
   a.x.isClose(b.x, maxRelDiff) and a.y.isClose(b.y, maxRelDiff)
 
@@ -167,22 +155,6 @@ proc vec3f*(x, y, z: FloatT): Vec3f {.inline.} =
 
 proc vec3i*(x, y, z: int): Vec3i {.inline.} =
   Vec3i(x: x, y: y, z: z)
-
-proc s*[T](a: Vec3[T]): T {.inline.} = a.x
-proc t*[T](a: Vec3[T]): T {.inline.} = a.y
-proc u*[T](a: Vec3[T]): T {.inline.} = a.z
-
-proc `s=`*[T](a: var Vec3[T], s: T) {.inline.} = a.x = s
-proc `t=`*[T](a: var Vec3[T], t: T) {.inline.} = a.y = t
-proc `u=`*[T](a: var Vec3[T], u: T) {.inline.} = a.z = u
-
-proc r*[T](a: Vec3[T]): T {.inline.} = a.x
-proc g*[T](a: Vec3[T]): T {.inline.} = a.y
-proc b*[T](a: Vec3[T]): T {.inline.} = a.z
-
-proc `r=`*[T](a: var Vec3[T], r: T) {.inline.} = a.x = r
-proc `g=`*[T](a: var Vec3[T], g: T) {.inline.} = a.y = g
-proc `b=`*[T](a: var Vec3[T], b: T) {.inline.} = a.z = b
 
 proc `isClose`*[T](a, b: Vec3[T], maxRelDiff = 0.0001): bool {.inline.} =
   (a.x.isClose(b.x, maxRelDiff) and
@@ -585,12 +557,6 @@ when isMainModule:
     assert a.x == 1
     assert a.y == 2
 
-    assert a.s == 1
-    assert a.t == 2
-
-    assert a.r == 1
-    assert a.g == 2
-
     assert a[0] == 1
     assert a[1] == 2
 
@@ -630,15 +596,10 @@ when isMainModule:
     assert a.x == 8
     assert a.y == 9
 
-    a.s = 5
-    a.t = 6
+    a.x = 5
+    a.y = 6
     assert a.x == 5
     assert a.y == 6
-
-    a.r = 3
-    a.g = 4
-    assert a.x == 3
-    assert a.y == 4
 
     a = vec2f(1, 2)
     a += b
@@ -671,12 +632,6 @@ when isMainModule:
 
     assert a.x == 1
     assert a.y == 2
-
-    assert a.s == 1
-    assert a.t == 2
-
-    assert a.r == 1
-    assert a.g == 2
 
     assert a[0] == 1
     assert a[1] == 2
@@ -715,15 +670,10 @@ when isMainModule:
     assert a.x == 8
     assert a.y == 9
 
-    a.s = 5
-    a.t = 6
+    a.x = 5
+    a.y = 6
     assert a.x == 5
     assert a.y == 6
-
-    a.r = 3
-    a.g = 4
-    assert a.x == 3
-    assert a.y == 4
 
     a = vec2i(1, 2)
     a += b
@@ -753,14 +703,6 @@ when isMainModule:
     assert a.x == 1
     assert a.y == 2
     assert a.z == 3
-
-    assert a.s == 1
-    assert a.t == 2
-    assert a.u == 3
-
-    assert a.r == 1
-    assert a.g == 2
-    assert a.b == 3
 
     assert a[0] == 1
     assert a[1] == 2
@@ -805,19 +747,12 @@ when isMainModule:
     assert a.y == 4
     assert a.z == 5
 
-    a.s = 9
-    a.t = 10
-    a.u = 11
-    assert a.x == 9
-    assert a.y == 10
-    assert a.z == 11
-
-    a.r = 6
-    a.g = 7
-    a.b = 8
-    assert a.r == 6
-    assert a.g == 7
-    assert a.b == 8
+    a.x = 5
+    a.y = 6
+    a.z = 7
+    assert a.x == 5
+    assert a.y == 6
+    assert a.z == 7
 
     a = vec3f(1, 2, 3)
     a += b
@@ -851,18 +786,6 @@ when isMainModule:
     assert a.x == 1
     assert a.y == 2
     assert a.z == 3
-
-    assert a.s == 1
-    assert a.t == 2
-    assert a.u == 3
-
-    assert a.r == 1
-    assert a.g == 2
-    assert a.b == 3
-
-    assert a[0] == 1
-    assert a[1] == 2
-    assert a[2] == 3
 
     assert a + b == vec3i(4, 7, 10)
     assert a - b == vec3i(-2, -3, -4)
@@ -901,19 +824,12 @@ when isMainModule:
     assert a.y == 4
     assert a.z == 5
 
-    a.s = 9
-    a.t = 10
-    a.u = 11
-    assert a.x == 9
-    assert a.y == 10
-    assert a.z == 11
-
-    a.r = 6
-    a.g = 7
-    a.b = 8
-    assert a.r == 6
-    assert a.g == 7
-    assert a.b == 8
+    a.x = 5
+    a.y = 6
+    a.z = 7
+    assert a.x == 5
+    assert a.y == 6
+    assert a.z == 7
 
     a = vec3i(1, 2, 3)
     a += b
