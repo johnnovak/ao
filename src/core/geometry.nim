@@ -143,8 +143,8 @@ proc clamp*[T](v: Vec2[T], a, b: T): Vec2[T] {.inline.} =
           y: clamp(v.y, a, b))
 
 proc lerp*[T](a, b: Vec2[T], t: FloatT): Vec2[T] {.inline.} =
-  Vec2[T](x: T((1-t) * FloatT(a.x) + t * FloatT(b.x)),
-          y: T((1-t) * FloatT(a.y) + t * FloatT(b.y)))
+  Vec2[T](x: T(lerp(FloatT(a.x), FloatT(b.x), t)),
+          y: T(lerp(FloatT(a.y), FloatT(b.y), t)))
 
 # }}}
 # {{{ Vec3
@@ -315,9 +315,9 @@ proc clamp*[T](v: Vec3[T], a, b: T): Vec3[T] {.inline.} =
           z: clamp(v.z, a, b))
 
 proc lerp*[T](a, b: Vec3[T], t: FloatT): Vec3[T] {.inline.} =
-  Vec3[T](x: T((1-t) * FloatT(a.x) + t * FloatT(b.x)),
-          y: T((1-t) * FloatT(a.y) + t * FloatT(b.y)),
-          z: T((1-t) * FloatT(a.z) + t * FloatT(b.z)))
+  Vec3[T](x: T(lerp(FloatT(a.x), FloatT(b.x), t)),
+          y: T(lerp(FloatT(a.y), FloatT(b.y), t)),
+          z: T(lerp(FloatT(a.z), FloatT(b.z), t)))
 
 # }}}
 # {{{ Box2
