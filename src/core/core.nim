@@ -21,10 +21,10 @@ const
   PiOver4* = 0.78539816339744830961
   Sqrt2*   = 1.41421356237309504880
 
-template isNaN*[T: float32|float64](x: T): bool =
+template isNaN*[T: SomeReal](x: T): bool =
   classify(x) == fcNan
 
-proc isCloseFn[T: float32|float64](a, b: T, maxRelDiff: T): bool =
+proc isCloseFn[T: SomeReal](a, b: T, maxRelDiff: T): bool =
   let
     diff = abs(a - b)
     largest = max(abs(a), abs(b))
@@ -36,7 +36,7 @@ proc isClose*(a, b: float32, maxRelDiff: float32 = 1e-5): bool =
 proc isClose*(a, b: float64, maxRelDiff: float64 = 1e-10): bool =
   isCloseFn(a, b, maxRelDiff)
 
-proc sgn*[T: int8|int16|int32|int64|float32|float64](a: T): int {.inline.} =
+proc sgn*[T: SomeNumber](a: T): int {.inline.} =
   cast[int](T(0) < a) - cast[int](a < T(0))
 
 proc modulo*[T](x: T): T {.inline.} =
