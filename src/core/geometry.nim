@@ -362,11 +362,20 @@ proc box2i*(a, b: Vec2i): Box2i {.inline.} =
 proc box2i*(p: Vec2i): Box2i {.inline.} =
   box2i(p, p)
 
-proc union*[T](a: Box2[T], p: Vec2[T]): Box2[T] {.inline.} =
-  Box2[T](pMin: vec2f(min(a.pMin.x, p.x),
-                      min(a.pMin.y, p.y)),
-          pMax: vec2f(max(a.pMax.x, p.x),
-                      max(a.pMax.y, p.y)))
+proc `[]`*[T](b: Box2[T], i: int): Vec2[T] {.inline.} =
+  assert i == 0 or i == 1
+  if i == 0: b.pMin else: b.pMax
+
+proc corner*[T](b: Box2[T], i: int): Vec2[T] {.inline.} =
+  assert i >= 0 or i <= 3
+  Vec2[T](x: b[ i        and 1].x,
+          y: b[(i shr 1) and 1].y)
+
+proc union*[T](b: Box2[T], p: Vec2[T]): Box2[T] {.inline.} =
+  Box2[T](pMin: vec2f(min(b.pMin.x, p.x),
+                      min(b.pMin.y, p.y)),
+          pMax: vec2f(max(b.pMax.x, p.x),
+                      max(b.pMax.y, p.y)))
 
 proc union*[T](a: Box2[T], b: Box2[T]): Box2[T] {.inline.} =
   Box2[T](pMin: vec2f(min(a.pMin.x, b.pMin.x),
@@ -457,13 +466,23 @@ proc box3i*(a, b: Vec3i): Box3i {.inline.} =
 proc box3i*(p: Vec3i): Box3i {.inline.} =
   box3i(p, p)
 
-proc union*[T](a: Box3[T], p: Vec3[T]): Box3[T] {.inline.} =
-  Box3[T](pMin: vec3f(min(a.pMin.x, p.x),
-                      min(a.pMin.y, p.y),
-                      min(a.pMin.z, p.z)),
-          pMax: vec3f(max(a.pMax.x, p.x),
-                      max(a.pMax.y, p.y),
-                      max(a.pMax.z, p.z)))
+proc `[]`*[T](b: Box3[T], i: int): Vec3[T] {.inline.} =
+  assert i == 0 or i == 1
+  if i == 0: b.pMin else: b.pMax
+
+proc corner*[T](b: Box3[T], i: int): Vec3[T] {.inline.} =
+  assert i >= 0 or i <= 8
+  Vec3[T](x: b[ i        and 1].x,
+          y: b[(i shr 1) and 1].y,
+          z: b[(i shr 2) and 1].z)
+
+proc union*[T](b: Box3[T], p: Vec3[T]): Box3[T] {.inline.} =
+  Box3[T](pMin: vec3f(min(b.pMin.x, p.x),
+                      min(b.pMin.y, p.y),
+                      min(b.pMin.z, p.z)),
+          pMax: vec3f(max(b.pMax.x, p.x),
+                      max(b.pMax.y, p.y),
+                      max(b.pMax.z, p.z)))
 
 proc union*[T](a: Box3[T], b: Box3[T]): Box3[T] {.inline.} =
   Box3[T](pMin: vec3f(min(a.pMin.x, b.pMin.x),
@@ -755,7 +774,13 @@ when isMainModule:
   block:
     let b1 = box2f(vec2f(3,1), vec2f(-2,5))
     assert b1.pMin == vec2f(-2,1)
+    assert b1[0] == b1.pMin
     assert b1.pMax == vec2f(3,5)
+    assert b1[1] == b1.pMax
+    assert b1.corner(0) == vec2f(-2,1)
+    assert b1.corner(1) == vec2f(3,1)
+    assert b1.corner(2) == vec2f(-2,5)
+    assert b1.corner(3) == vec2f(3,5)
 
     let b2 = box2f(vec2f(1,2))
     assert b2.pMin == vec2f(1,2)
@@ -792,7 +817,17 @@ when isMainModule:
   block:
     let b1 = box3f(vec3f(3,1,4), vec3f(-2,5,-1))
     assert b1.pMin == vec3f(-2,1,-1)
+    assert b1[0] == b1.pMin
     assert b1.pMax == vec3f(3,5,4)
+    assert b1[1] == b1.pMax
+    assert b1.corner(0) == vec3f(-2, 1, -1)
+    assert b1.corner(1) == vec3f( 3, 1, -1)
+    assert b1.corner(2) == vec3f(-2, 5, -1)
+    assert b1.corner(3) == vec3f( 3, 5, -1)
+    assert b1.corner(4) == vec3f(-2, 1,  4)
+    assert b1.corner(5) == vec3f( 3, 1,  4)
+    assert b1.corner(6) == vec3f(-2, 5,  4)
+    assert b1.corner(7) == vec3f( 3, 5,  4)
 
     let b2 = box3f(vec3f(1,2,3))
     assert b2.pMin == vec3f(1,2,3)
