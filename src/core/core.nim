@@ -62,6 +62,18 @@ proc solveQuadratic*(a, b, c, delta: float64): (float64, float64) {.inline.} =
 
 proc printf*(format: cstring) {.header: "<stdio.h>", varargs.}
 
+proc c_snprintf(buf: cstring, size: int, format: cstring)
+               {.importc: "snprintf", header: "<stdio.h>", varargs.}
+
+template sprintf*(format: cstring, args: varargs[untyped]): string =
+  const MAXLEN = 4096
+  var buf = newString(MAXLEN)
+  c_snprintf(buf, MAXLEN, format, args)
+  buf.setLen(buf.cstring.len)
+  var s = newString(buf.len)
+  s = buf
+  s
+
 
 when isMainModule:
   assert $NegZero == "-0.0"
@@ -103,6 +115,8 @@ when isMainModule:
     assert x1 ==~ 1.786737589984535
     assert x2 ==~ 1.149782767465722e-08
 
-  printf("stuff: %f\n", 123.4)
+  var s = sprintf("stuff: %f", 123.4)
+  assert s == "stuff: 123.400000"
+
 
 # vim: et:ts=2:sw=2:fdm=marker
