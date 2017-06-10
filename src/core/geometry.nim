@@ -5,7 +5,6 @@ import math
 
 # {{{ Vec2
 
-# TODO byref pragma?
 type Vec2*[T] = object
   x*, y*: T
 
@@ -152,7 +151,6 @@ proc lerp*[T](a, b: Vec2[T], t: FloatT): Vec2[T] {.inline.} =
 # }}}
 # {{{ Vec3
 
-# TODO byref pragma?
 type Vec3*[T] = object
   x*, y*, z*: T
 
@@ -372,22 +370,22 @@ proc corner*[T](b: Box2[T], i: int): Vec2[T] {.inline.} =
           y: b[(i shr 1) and 1].y)
 
 proc union*[T](b: Box2[T], p: Vec2[T]): Box2[T] {.inline.} =
-  Box2[T](pMin: vec2f(min(b.pMin.x, p.x),
-                      min(b.pMin.y, p.y)),
-          pMax: vec2f(max(b.pMax.x, p.x),
-                      max(b.pMax.y, p.y)))
+  Box2[T](pMin: Vec2[T](x: min(b.pMin.x, p.x),
+                        y: min(b.pMin.y, p.y)),
+          pMax: Vec2[T](x: max(b.pMax.x, p.x),
+                        y: max(b.pMax.y, p.y)))
 
 proc union*[T](a: Box2[T], b: Box2[T]): Box2[T] {.inline.} =
-  Box2[T](pMin: vec2f(min(a.pMin.x, b.pMin.x),
-                      min(a.pMin.y, b.pMin.y)),
-          pMax: vec2f(max(a.pMax.x, b.pMax.x),
-                      max(a.pMax.y, b.pMax.y)))
+  Box2[T](pMin: Vec2[T](x: min(a.pMin.x, b.pMin.x),
+                        y: min(a.pMin.y, b.pMin.y)),
+          pMax: Vec2[T](x: max(a.pMax.x, b.pMax.x),
+                        y: max(a.pMax.y, b.pMax.y)))
 
 proc intersect*[T](a: Box2[T], b: Box2[T]): Box2[T] {.inline.} =
-  Box2[T](pMin: vec2f(max(a.pMin.x, b.pMin.x),
-                      max(a.pMin.y, b.pMin.y)),
-          pMax: vec2f(min(a.pMax.x, b.pMax.x),
-                      min(a.pMax.y, b.pMax.y)))
+  Box2[T](pMin: Vec2[T](x: max(a.pMin.x, b.pMin.x),
+                        y: max(a.pMin.y, b.pMin.y)),
+          pMax: Vec2[T](x: min(a.pMax.x, b.pMax.x),
+                        y: min(a.pMax.y, b.pMax.y)))
 
 proc overlaps*[T](a: Box2[T], b: Box2[T]): bool {.inline.} =
   (a.pMax.x >= b.pMin.x and a.pMin.x <= b.pMax.x and
@@ -477,28 +475,28 @@ proc corner*[T](b: Box3[T], i: int): Vec3[T] {.inline.} =
           z: b[(i shr 2) and 1].z)
 
 proc union*[T](b: Box3[T], p: Vec3[T]): Box3[T] {.inline.} =
-  Box3[T](pMin: vec3f(min(b.pMin.x, p.x),
-                      min(b.pMin.y, p.y),
-                      min(b.pMin.z, p.z)),
-          pMax: vec3f(max(b.pMax.x, p.x),
-                      max(b.pMax.y, p.y),
-                      max(b.pMax.z, p.z)))
+  Box3[T](pMin: Vec3[T](x: min(b.pMin.x, p.x),
+                        y: min(b.pMin.y, p.y),
+                        z: min(b.pMin.z, p.z)),
+          pMax: Vec3[T](x: max(b.pMax.x, p.x),
+                        y: max(b.pMax.y, p.y),
+                        z: max(b.pMax.z, p.z)))
 
 proc union*[T](a: Box3[T], b: Box3[T]): Box3[T] {.inline.} =
-  Box3[T](pMin: vec3f(min(a.pMin.x, b.pMin.x),
-                      min(a.pMin.y, b.pMin.y),
-                      min(a.pMin.z, b.pMin.z)),
-          pMax: vec3f(max(a.pMax.x, b.pMax.x),
-                      max(a.pMax.y, b.pMax.y),
-                      max(a.pMax.z, b.pMax.z)))
+  Box3[T](pMin: Vec3[T](x: min(a.pMin.x, b.pMin.x),
+                        y: min(a.pMin.y, b.pMin.y),
+                        z: min(a.pMin.z, b.pMin.z)),
+          pMax: Vec3[T](x: max(a.pMax.x, b.pMax.x),
+                        y: max(a.pMax.y, b.pMax.y),
+                        z: max(a.pMax.z, b.pMax.z)))
 
 proc intersect*[T](a: Box3[T], b: Box3[T]): Box3[T] {.inline.} =
-  Box3[T](pMin: vec3f(max(a.pMin.x, b.pMin.x),
-                      max(a.pMin.y, b.pMin.y),
-                      max(a.pMin.z, b.pMin.z)),
-          pMax: vec3f(min(a.pMax.x, b.pMax.x),
-                      min(a.pMax.y, b.pMax.y),
-                      min(a.pMax.z, b.pMax.z)))
+  Box3[T](pMin: Vec3[T](x: max(a.pMin.x, b.pMin.x),
+                        y: max(a.pMin.y, b.pMin.y),
+                        z: max(a.pMin.z, b.pMin.z)),
+          pMax: Vec3[T](x: min(a.pMax.x, b.pMax.x),
+                        y: min(a.pMax.y, b.pMax.y),
+                        z: min(a.pMax.z, b.pMax.z)))
 
 proc overlaps*[T](a: Box3[T], b: Box3[T]): bool {.inline.} =
   (a.pMax.x >= b.pMin.x and a.pMin.x <= b.pMax.x and
@@ -555,7 +553,6 @@ proc offset*[T](b: Box3[T], p: Vec3[T]): Vec3[T] {.inline.} =
 # }}}
 # {{{ Ray
 
-# TODO byref pragma?
 type Ray* = object
   o*: Vec3f
   d*: Vec3f
@@ -974,6 +971,48 @@ when isMainModule:
     assert b1.offset(vec2f(-0.75, 4)) == vec2f(0.25, 0.75)
 
   # }}}
+  # {{{ Box2i
+  block:
+    let b1 = box2i(vec2i(3,1), vec2i(-2,5))
+    assert b1.pMin == vec2i(-2,1)
+    assert b1[0] == b1.pMin
+    assert b1.pMax == vec2i(3,5)
+    assert b1[1] == b1.pMax
+    assert b1.corner(0) == vec2i(-2,1)
+    assert b1.corner(1) == vec2i(3,1)
+    assert b1.corner(2) == vec2i(-2,5)
+    assert b1.corner(3) == vec2i(3,5)
+
+    let b2 = box2i(vec2i(1,2))
+    assert b2.pMin == vec2i(1,2)
+    assert b2.pMax == vec2i(1,2)
+
+    assert box2i().union(vec2i(1,2)) == box2i(vec2i(1,2), vec2i(1,2))
+    assert b2.union(vec2i(2,3)) == box2i(vec2i(1,2), vec2i(2,3))
+    assert b1.union(box2i(vec2i(0,6),
+                          vec2i(8,-7))) == box2i(vec2i(-2,-7), vec2i(8,6))
+
+    let b3 = box2i(vec2i(0,4), vec2i(2,6))
+    assert b1.intersect(b3) == box2i(vec2i(0,4), vec2i(2,5))
+
+    assert b1.overlaps(box2i(vec2i(2,3), vec2i(4,7))) == true
+    assert b1.overlaps(box2i(vec2i(-3,-1), vec2i(-1,1))) == true
+    assert b1.overlaps(box2i(vec2i(-3,-1), vec2i(-1,0))) == false
+    assert b1.overlaps(box2i(vec2i(4,-1), vec2i(5,0))) == false
+    assert b1.overlaps(box2i(vec2i(2,-1), vec2i(5,0))) == false
+
+    assert vec2i(0,1).inside(b1) == true
+    assert vec2i(0,4).insideExclusive(b1) == true
+    assert vec2i(1,5).insideExclusive(b1) == false
+
+    assert b1.center == vec2i(0, 3)
+    assert b1.diagonal == vec2i(5,4)
+    assert b1.maxExtent == 0
+    assert b1.area == 20
+    assert b1.expand(1) == box2i(vec2i(-3,0), vec2i(4,6))
+    assert lerp(b1, 0.25) == vec2i(-0, 2)
+
+  # }}}
   # {{{ Box3f
   block:
     let b1 = box3f(vec3f(3,1,4), vec3f(-2,5,-1))
@@ -1021,6 +1060,54 @@ when isMainModule:
     assert b1.expand(1) == box3f(vec3f(-3,0,-2), vec3f(4,6,5))
     assert lerp(b1, 0.25) == vec3f(-0.75, 2, 0.25)
     assert b1.offset(vec3f(-0.75, 4, 1.5)) == vec3f(0.25, 0.75, 0.5)
+
+  # }}}
+  # {{{ Box3i
+  block:
+    let b1 = box3i(vec3i(3,1,4), vec3i(-2,5,-1))
+    assert b1.pMin == vec3i(-2,1,-1)
+    assert b1[0] == b1.pMin
+    assert b1.pMax == vec3i(3,5,4)
+    assert b1[1] == b1.pMax
+    assert b1.corner(0) == vec3i(-2, 1, -1)
+    assert b1.corner(1) == vec3i( 3, 1, -1)
+    assert b1.corner(2) == vec3i(-2, 5, -1)
+    assert b1.corner(3) == vec3i( 3, 5, -1)
+    assert b1.corner(4) == vec3i(-2, 1,  4)
+    assert b1.corner(5) == vec3i( 3, 1,  4)
+    assert b1.corner(6) == vec3i(-2, 5,  4)
+    assert b1.corner(7) == vec3i( 3, 5,  4)
+
+    let b2 = box3i(vec3i(1,2,3))
+    assert b2.pMin == vec3i(1,2,3)
+    assert b2.pMax == vec3i(1,2,3)
+
+    assert box3i().union(vec3i(1,2,3)) == box3i(vec3i(1,2,3), vec3i(1,2,3))
+    assert b2.union(vec3i(2,3,4)) == box3i(vec3i(1,2,3), vec3i(2,3,4))
+    assert b1.union(box3i(vec3i(0,6,-3),
+                          vec3i(8,-7,-2))) == box3i(vec3i(-2,-7,-3),
+                                                    vec3i(8,6,4))
+
+    let b3 = box3i(vec3i(0,4,3), vec3i(2,6,7))
+    assert b1.intersect(b3) == box3i(vec3i(0,4,3), vec3i(2,5,4))
+
+    assert b1.overlaps(box3i(vec3i(2,3,0), vec3i(4,7,5))) == true
+    assert b1.overlaps(box3i(vec3i(-3,-1,4), vec3i(-1,1,3))) == true
+    assert b1.overlaps(box3i(vec3i(-3,-1,-3), vec3i(-1,0,-1))) == false
+    assert b1.overlaps(box3i(vec3i(4,-1,1), vec3i(5,0,2))) == false
+    assert b1.overlaps(box3i(vec3i(2,-1,5), vec3i(5,0,6))) == false
+
+    assert vec3i(0,1,3).inside(b1) == true
+    assert vec3i(1, 4, 3).insideExclusive(b1) == true
+    assert vec3i(1,4,4).insideExclusive(b1) == false
+
+    assert b1.center == vec3i(0, 3, 1)
+    assert b1.diagonal == vec3i(5,4,5)
+    assert b1.maxExtent == 2
+    assert b1.area == 130
+    assert b1.volume == 100
+    assert b1.expand(1) == box3i(vec3i(-3,0,-2), vec3i(4,6,5))
+    assert lerp(b1, 0.25) == vec3i(-0, 2, 0)
 
   # }}}
   # {{{ Ray
