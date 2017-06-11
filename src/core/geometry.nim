@@ -140,6 +140,12 @@ proc lerp*[T](a, b: Vec2[T], t: FloatT): Vec2[T] {.inline.} =
   Vec2[T](x: T(lerp(FloatT(a.x), FloatT(b.x), t)),
           y: T(lerp(FloatT(a.y), FloatT(b.y), t)))
 
+proc distance*[T](a, b: Vec2[T]): FloatT {.inline.} =
+  (a - b).len
+
+proc distance2*[T](a, b: Vec2[T]): FloatT {.inline.} =
+  (a - b).len2
+
 # }}}
 # {{{ Vec3
 
@@ -266,6 +272,11 @@ proc min*[T](a: Vec3[T]): T {.inline.} =
 proc max*[T](a: Vec3[T]): T {.inline.} =
   max(max(a.x, a.y), a.z)
 
+proc maxDimension*[T](a: Vec3[T]): int {.inline.} =
+  if a.x > a.y and a.x > a.z: result = 0
+  elif a.y > a.z: result = 1
+  else: result = 2
+
 proc min*[T](a, b: Vec3[T]): Vec3[T] {.inline.} =
   Vec3[T](x: min(a.x, b.x),
           y: min(a.y, b.y),
@@ -300,6 +311,21 @@ proc lerp*[T](a, b: Vec3[T], t: FloatT): Vec3[T] {.inline.} =
   Vec3[T](x: T(lerp(FloatT(a.x), FloatT(b.x), t)),
           y: T(lerp(FloatT(a.y), FloatT(b.y), t)),
           z: T(lerp(FloatT(a.z), FloatT(b.z), t)))
+
+proc permute*[T](a: Vec3[T], x, y, z: int): Vec3[T] {.inline.} =
+  assert x >= 0 and x <= 2
+  assert y >= 0 and y <= 2
+  assert z >= 0 and z <= 2
+  Vec3[T](x: a[x], y: a[y], z: a[z])
+
+proc distance*[T](a, b: Vec3[T]): FloatT {.inline.} =
+  (a - b).len
+
+proc distance2*[T](a, b: Vec3[T]): FloatT {.inline.} =
+  (a - b).len2
+
+# TODO faceforward
+# TODO coordinateSystem
 
 # }}}
 # {{{ Box2
@@ -585,7 +611,7 @@ when isMainModule:
     assert a.dot(b) == 13
     assert a.absDot(vec2f(-3,-5)) == 13
     assert len(a) == sqrt(FloatT(5))
-    assert len2(a).isClose(FloatT(5))
+    assert len2(a).isClose(5)
     assert vec2f(10,0).norm == vec2f(1,0)
     assert min(a) == 1
     assert max(a) == 2
@@ -596,6 +622,8 @@ when isMainModule:
     assert ceil(vec2f(0.2, 1.7)) == vec2f(1, 2)
     assert clamp(vec2f(-2.5, 0.5), -1, 1) == vec2f(-1, 0.5)
     assert lerp(a, b, 0.25) == vec2f(1.5, 2.75)
+    assert a.distance(b).isClose(sqrt(FloatT(13)))
+    assert a.distance2(b).isClose(13)
 
   block:
     var a = vec2f(1, 2)
@@ -670,6 +698,7 @@ when isMainModule:
     assert abs(vec2i(-2,3)) == vec2i(2,3)
     assert clamp(vec2i(-2, 2), -1, 3) == vec2i(-1, 2)
     assert lerp(a, b, 0.25) == vec2i(1, 2)
+    assert a.distance2(b).isClose(13)
 
   block:
     var a = vec2i(1, 2)
@@ -734,10 +763,11 @@ when isMainModule:
     assert a.absDot(vec3f(-3,-5,-7)) == 34
     assert a.cross(b) == vec3f(-1,2,-1)
     assert len(a) == sqrt(FloatT(14))
-    assert len2(a).isClose(FloatT(14))
+    assert len2(a).isClose(14)
     assert vec3f(-10,0,0).norm == vec3f(-1,0,0)
     assert min(a) == 1
     assert max(a) == 3
+    assert maxDimension(b) == 2
     assert min(vec3f(-2,5,7), vec3f(1,3,-5)) == vec3f(-2,3,-5)
     assert max(vec3f(-2,5,7), vec3f(1,3,-5)) == vec3f(1,5,7)
     assert abs(vec3f(-2,3,0)) == vec3f(2,3,0)
@@ -745,6 +775,9 @@ when isMainModule:
     assert ceil(vec3f(0.2, 1.7, -1.9)) == vec3f(1, 2, -1)
     assert clamp(vec3f(-2.5, 0.5, 1.3), -1, 1) == vec3f(-1, 0.5, 1)
     assert lerp(a, b, 0.25) == vec3f(1.5, 2.75, 4)
+    assert b.permute(2, 1, 0) == vec3f(7, 5, 3)
+    assert a.distance(b).isClose(sqrt(FloatT(29)))
+    assert a.distance2(b).isClose(29)
 
   block:
     var a = vec3f(1, 2, 3)
@@ -817,11 +850,15 @@ when isMainModule:
     assert vec3i(-10,0,0).norm == vec3i(-1,0,0)
     assert min(a) == 1
     assert max(a) == 3
+    assert maxDimension(b) == 2
     assert min(vec3i(-2,5,7), vec3i(1,3,-5)) == vec3i(-2,3,-5)
     assert max(vec3i(-2,5,7), vec3i(1,3,-5)) == vec3i(1,5,7)
     assert abs(vec3i(-2,3,0)) == vec3i(2,3,0)
     assert clamp(vec3i(-2, 0, 1), -1, 1) == vec3i(-1, 0, 1)
     assert lerp(a, b, 0.25) == vec3i(1, 2, 4)
+    assert b.permute(2, 1, 0) == vec3i(7, 5, 3)
+    assert a.distance(b).isClose(sqrt(FloatT(29)))
+    assert a.distance2(b).isClose(29)
 
   block:
     var a = vec3i(1, 2, 3)
