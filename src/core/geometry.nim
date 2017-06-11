@@ -332,6 +332,9 @@ proc box2i*(a, b: Vec2i): Box2i {.inline.} =
 proc box2i*(p: Vec2i): Box2i {.inline.} =
   box2i(p, p)
 
+proc `isClose`*[T](a, b: Box2[T], maxRelDiff = 0.0001): bool {.inline.} =
+  a.pMin.isClose(b.pMin, maxRelDiff) and a.pMax.isClose(b.pMax, maxRelDiff)
+
 proc `[]`*[T](b: Box2[T], i: int): Vec2[T] {.inline.} =
   assert i == 0 or i == 1
   if i == 0: b.pMin else: b.pMax
@@ -404,7 +407,7 @@ proc offset*[T](b: Box2[T], p: Vec2[T]): Vec2[T] {.inline.} =
 # }}}
 # {{{ Box3
 
-type Box3[T] = object
+type Box3*[T] = object
   pMin*: Vec3[T]
   pMax*: Vec3[T]
 
@@ -435,6 +438,9 @@ proc box3i*(a, b: Vec3i): Box3i {.inline.} =
 
 proc box3i*(p: Vec3i): Box3i {.inline.} =
   box3i(p, p)
+
+proc `isClose`*[T](a, b: Box3[T], maxRelDiff = 0.0001): bool {.inline.} =
+  a.pMin.isClose(b.pMin, maxRelDiff) and a.pMax.isClose(b.pMax, maxRelDiff)
 
 proc `[]`*[T](b: Box3[T], i: int): Vec3[T] {.inline.} =
   assert i == 0 or i == 1

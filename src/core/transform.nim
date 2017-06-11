@@ -188,7 +188,7 @@ proc rotateZ*(theta: FloatT): Transform =
     cosTheta = cos(degToRad(theta))
     m = mat4x4([[FloatT(cosTheta), -sinTheta, 0, 0],
                 [FloatT(sinTheta),  cosTheta, 0, 0],
-                [FloatT(0),                0, 0, 0],
+                [FloatT(0),                0, 1, 0],
                 [FloatT(0),                0, 0, 1]])
 
   transform(m, m.transpose)
@@ -255,6 +255,17 @@ proc mulPoint*[T](t: Transform, p: Vec3[T]): Vec3[T] {.inline.} =
   Vec3[T](x: T(t.m[0,0] * p.x + t.m[0,1] * p.y + t.m[0,2] * p.z + t.m[0,3]),
           y: T(t.m[1,0] * p.x + t.m[1,1] * p.y + t.m[1,2] * p.z + t.m[1,3]),
           z: T(t.m[2,0] * p.x + t.m[2,1] * p.y + t.m[2,2] * p.z + t.m[2,3]))
+
+proc mul*[T](t: Transform, b: Box3[T]): Box3[T] {.inline.} =
+  var bt =    box3f(t.mulPoint(vec3f(b.pMin.x, b.pMin.y, b.pMin.z)))
+  bt     = bt.union(t.mulPoint(vec3f(b.pMax.x, b.pMin.y, b.pMin.z)))
+  bt     = bt.union(t.mulPoint(vec3f(b.pMin.x, b.pMax.y, b.pMin.z)))
+  bt     = bt.union(t.mulPoint(vec3f(b.pMax.x, b.pMax.y, b.pMin.z)))
+  bt     = bt.union(t.mulPoint(vec3f(b.pMin.x, b.pMin.y, b.pMax.z)))
+  bt     = bt.union(t.mulPoint(vec3f(b.pMax.x, b.pMin.y, b.pMax.z)))
+  bt     = bt.union(t.mulPoint(vec3f(b.pMin.x, b.pMax.y, b.pMax.z)))
+  bt     = bt.union(t.mulPoint(vec3f(b.pMax.x, b.pMax.y, b.pMax.z)))
+  result = bt
 
 # }}}
 
@@ -368,6 +379,13 @@ when isMainModule:
 
     assert rigidT.mInv.isClose(rigidT.m.affineInverse, 1)
     assert affineT.mInv.isClose(affineT.m.affineInverse, 1)
+
+  block:  # bounding box transform test
+    let
+      b = box3f(vec3f(1,2,3), vec3f(2,4,6))
+      t = rotateZ(90)
+
+    assert t.mul(b).isClose(box3f(vec3f(-4,1,3), vec3f(-2,2,6)))
 
   # }}}
 
