@@ -49,6 +49,9 @@ proc `+=`*[T](a: var Vec2[T], b: Vec2[T]) {.inline.} =
   a.x += b.x
   a.y += b.y
 
+proc `-`*[T](a: Vec2[T]): Vec2[T] {.inline.} =
+  Vec2[T](x: -a.x, y: -a.y)
+
 proc `-`*[T](a, b: Vec2[T]): Vec2[T] {.inline.} =
   assert(not hasNaNs(b))
   Vec2[T](x: a.x - b.x,
@@ -195,6 +198,9 @@ proc `+=`*[T](a: var Vec3[T], b: Vec3[T]) {.inline.} =
   a.y += b.y
   a.z += b.z
 
+proc `-`*[T](a: Vec3[T]): Vec3[T] {.inline.} =
+  Vec3[T](x: -a.x, y: -a.y, z: -a.z)
+
 proc `-`*[T](a, b: Vec3[T]): Vec3[T] {.inline.} =
   assert(not hasNaNs(b))
   Vec3[T](x: a.x - b.x,
@@ -324,7 +330,9 @@ proc distance*[T](a, b: Vec3[T]): FloatT {.inline.} =
 proc distance2*[T](a, b: Vec3[T]): FloatT {.inline.} =
   (a - b).len2
 
-# TODO faceforward
+proc faceforward*[T](a, b: Vec3[T]): Vec3[T] {.inline.} =
+  if a.dot(b) < 0: -a
+  else: a
 
 proc coordinateSystem*[T](v1: Vec3[T]): (Vec3[T], Vec3[T]) {.inline.} =
   var v2: Vec3[T]
@@ -600,11 +608,11 @@ when isMainModule:
 
     assert a.x == 1
     assert a.y == 2
-
     assert a[0] == 1
     assert a[1] == 2
 
     assert a + b == vec2f(4, 7)
+    assert -a == vec2f(-1, -2)
     assert a - b == vec2f(-2, -3)
     assert a * 2 == vec2f(2, 4)
     assert 2 * a == vec2f(2, 4)
@@ -678,11 +686,11 @@ when isMainModule:
 
     assert a.x == 1
     assert a.y == 2
-
     assert a[0] == 1
     assert a[1] == 2
 
     assert a + b == vec2i(4, 7)
+    assert -a == vec2i(-1, -2)
     assert a - b == vec2i(-2, -3)
     assert a * 2 == vec2i(2, 4)
     assert 2 * a == vec2i(2, 4)
@@ -750,12 +758,12 @@ when isMainModule:
     assert a.x == 1
     assert a.y == 2
     assert a.z == 3
-
     assert a[0] == 1
     assert a[1] == 2
     assert a[2] == 3
 
     assert a + b == vec3f(4, 7, 10)
+    assert -a == vec3f(-1, -2, -3)
     assert a - b == vec3f(-2, -3, -4)
     assert a * 2 == vec3f(2, 4, 6)
     assert 2 * a == vec3f(2, 4, 6)
@@ -786,6 +794,9 @@ when isMainModule:
     assert b.permute(2, 1, 0) == vec3f(7, 5, 3)
     assert a.distance(b).isClose(sqrt(FloatT(29)))
     assert a.distance2(b).isClose(29)
+
+    assert a.faceforward(vec3f(1, 1, 1)) == a
+    assert a.faceforward(vec3f(-1, -1, -1)) == -a
 
     let
       v1 = a.norm
@@ -843,8 +854,12 @@ when isMainModule:
     assert a.x == 1
     assert a.y == 2
     assert a.z == 3
+    assert a[0] == 1
+    assert a[1] == 2
+    assert a[2] == 3
 
     assert a + b == vec3i(4, 7, 10)
+    assert -a == vec3i(-1, -2, -3)
     assert a - b == vec3i(-2, -3, -4)
     assert a * 2 == vec3i(2, 4, 6)
     assert 2 * a == vec3i(2, 4, 6)
@@ -873,6 +888,9 @@ when isMainModule:
     assert b.permute(2, 1, 0) == vec3i(7, 5, 3)
     assert a.distance(b).isClose(sqrt(FloatT(29)))
     assert a.distance2(b).isClose(29)
+
+    assert a.faceforward(vec3i(1, 1, 1)) == a
+    assert a.faceforward(vec3i(-1, -1, -1)) == -a
 
   block:
     var a = vec3i(1, 2, 3)
