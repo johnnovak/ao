@@ -578,18 +578,37 @@ proc offset*[T](b: Box3[T], p: Vec3[T]): Vec3[T] {.inline.} =
 # }}}
 # {{{ Ray
 
-type Ray* = object
+type Ray* = object of RootObj
   o*: Vec3f
   d*: Vec3f
   tMax*: FloatT
   time*: FloatT
   medium*: ref Medium
 
-proc hasNaNs*(r: Ray): bool {.inline.} =
+method hasNaNs*(r: Ray): bool {.base, inline.} =
   hasNaNs(r.o) or hasNaNs(r.d) or isNaN(r.tMax)
 
 proc t*(r: Ray, t: FloatT): Vec3f {.inline.} =
   r.o + r.d*t
+
+# }}}
+# {{{ RayDifferential
+
+type RayDifferential* = object of Ray
+  hasDifferentials*: bool
+  rxOrigin*, ryOrigin*: Vec3f
+  rxDirection*, ryDirection*: Vec3f
+
+method hasNaNs*(r: RayDifferential): bool {.inline.} =
+  (procCall hasNaNs(Ray(r))) or
+    r.hasDifferentials and (hasNaNs(r.rxOrigin) or hasNaNs(r.ryOrigin) or
+                            hasNaNs(r.rxDirection) or hasNaNs(r.ryDirection))
+
+proc scaleDifferentials*(r: var RayDifferential, s: FloatT) {.inline.} =
+  r.rxOrigin = r.o + (r.rxOrigin - r.o) * s
+  r.ryOrigin = r.o + (r.ryOrigin - r.o) * s
+  r.rxDirection = r.d + (r.rxDirection - r.d) * s
+  r.ryDirection = r.d + (r.ryDirection - r.d) * s
 
 # }}}
 
@@ -1112,6 +1131,20 @@ when isMainModule:
     let r = Ray(o: vec3f(1, 2, 3), d: vec3f(-1, -0.5, 0))
 
     assert r.t(3) == vec3f(-2, 0.5, 3)
+    assert hasNaNs(r) == false
+
+  # }}}
+  # {{{ RayDifferential
+  block:
+    var r = RayDifferential(o: vec3f(1, 2, 3), d: vec3f(-1, -0.5, 0))
+    r.hasDifferentials = true
+    r.rxOrigin = vec3f(1,1,1)
+    r.ryOrigin = vec3f(2,2,2)
+    r.rxDirection = vec3f(1,0,0)
+    r.ryDirection = vec3f(0,1,0)
+
+    assert r.t(3) == vec3f(-2, 0.5, 3)
+    assert hasNaNs(r) == false
 
   # }}}
 
