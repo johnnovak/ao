@@ -372,7 +372,7 @@ when isMainModule:
       rz = rotateY(120)
       s = scale(1.1, 42.42, -8.6)
       rigidT = rx * ry * rz * d
-      affineT = rx * ry * rz * s * d
+      affineT = rigidT * s
 
     assert rigidT.mInv.isClose(rigidT.m.rigidInverse)
     assert affineT.mInv.isClose(affineT.m.rigidInverse) == false
