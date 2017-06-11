@@ -325,7 +325,15 @@ proc distance2*[T](a, b: Vec3[T]): FloatT {.inline.} =
   (a - b).len2
 
 # TODO faceforward
-# TODO coordinateSystem
+
+proc coordinateSystem*[T](v1: Vec3[T]): (Vec3[T], Vec3[T]) {.inline.} =
+  var v2: Vec3[T]
+  if abs(v1.x) > abs(v1.y):
+    v2 = vec3f(0, v1.z, -v1.y) / sqrt(v1.y * v1.y + v1.z * v1.z)
+  else:
+    v2 = vec3f(v1.z, 0, -v1.x) / sqrt(v1.x * v1.x + v1.z * v1.z)
+  let v3 = v1.cross(v2)
+  (v2, v3)
 
 # }}}
 # {{{ Box2
@@ -778,6 +786,12 @@ when isMainModule:
     assert b.permute(2, 1, 0) == vec3f(7, 5, 3)
     assert a.distance(b).isClose(sqrt(FloatT(29)))
     assert a.distance2(b).isClose(29)
+
+    let
+      v1 = a.norm
+      (v2, v3) = v1.coordinateSystem
+    assert v2.len.isClose(1)
+    assert v3.len.isClose(1)
 
   block:
     var a = vec3f(1, 2, 3)
