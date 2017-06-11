@@ -3,6 +3,10 @@ import core
 import math
 
 
+# WARNING: For efficiency reasons, all geometry types in this file can perform
+# mutable operations on themselves and/or expose their encapsulated data for
+# modification.
+
 # {{{ Vec2
 
 type Vec2*[T] = object
