@@ -1,4 +1,5 @@
 import core
+import medium
 
 import math
 
@@ -582,6 +583,7 @@ type Ray* = object
   d*: Vec3f
   tMax*: FloatT
   time*: FloatT
+  medium*: ref Medium
 
 proc hasNaNs*(r: Ray): bool {.inline.} =
   hasNaNs(r.o) or hasNaNs(r.d) or isNaN(r.tMax)
