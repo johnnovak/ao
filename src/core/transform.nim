@@ -374,9 +374,8 @@ when isMainModule:
 
     assert t.mul(b).isClose(box3f(vec3f(-4,1,3), vec3f(-2,2,6)))
 
-    echo t.m
     t.m = mat4x4()
-
+    let s = $t
 
   # }}}
 
