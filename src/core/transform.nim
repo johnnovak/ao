@@ -262,6 +262,28 @@ proc scale*(sx, sy, sz: FloatT): Transform =
 proc scale*(s: FloatT): Transform =
   scale(s, s, s)
 
+
+proc lookAt*(eye, at, up: Vec3f): Transform =
+  let
+    lookDir = (at - eye).norm
+    bx = lookDir.cross(up.norm)
+
+  assert bx.len.isClose(0) == false
+
+  let
+    by = bx.cross(lookDir)
+    bz = -lookDir
+
+    cameraToWorld = mat4x4(bx.x, by.x, bz.x, eye.x,
+                           bx.y, by.y, bz.y, eye.y,
+                           bx.z, by.z, bz.z, eye.z,
+                              0,    0,    0,     1)
+
+    worldToCamera = cameraToWorld.rigidInverse
+
+  transform(worldToCamera, cameraToWorld)
+
+
 proc mulVec*[T](t: Transform, v: Vec3[T]): Vec3[T] {.inline.} =
   Vec3[T](x: T(t.m[0,0] * v.x + t.m[0,1] * v.y + t.m[0,2] * v.z),
           y: T(t.m[1,0] * v.x + t.m[1,1] * v.y + t.m[1,2] * v.z),
@@ -366,6 +388,15 @@ when isMainModule:
 
     assert rigidT.mInv.isClose(rigidT.m.affineInverse, 1)
     assert affineT.mInv.isClose(affineT.m.affineInverse, 1)
+
+  block:  # lookAt tests
+    let
+      t = lookAt(eye = vec3f(10,5,7), at = vec3f(3,5,7), up = vec3f(0,1,0))
+      p1 = vec3f(3,4,5)
+      p2 = t.mulPoint(p1)
+
+    assert p2.isClose(vec3f(2,-1,-7))
+    assert t.inverse.mulPoint(p2).isClose(p1)
 
   block:  # bounding box transform test
     var
