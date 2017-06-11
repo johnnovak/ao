@@ -34,7 +34,7 @@ proc `$`*(m: Mat4x4): string =
                    m[2,0], m[2,1], m[2,2], m[2,3],
                    m[3,0], m[3,1], m[3,2], m[3,3])
 
-proc `isClose`*(a, b: Mat4x4, maxRelDiff: FloatT = 1): bool =
+proc `isClose`*(a, b: Mat4x4, maxRelDiff: FloatT = 1e-5): bool =
   for i in 0..3:
     for j in 0..3:
       if not (a[i,j].isClose(b[i,j], maxRelDiff)):
@@ -99,7 +99,6 @@ proc inverse(m: Mat4x4): Mat4x4 =
   result[3,3] = ( m[2,0] * s3 - m[2,1] * s1 + m[2,2] * s0) * invDet
 
 
-# TODO not needed?
 proc affineInverse(m: Mat4x4): Mat4x4 =
   ## Perform an inverse and make sure the bottom row always contains
   ## [0, 0, 0, 1].
@@ -109,7 +108,6 @@ proc affineInverse(m: Mat4x4): Mat4x4 =
   result[3,2] = 0
   result[3,3] = 1
 
-# TODO not needed?
 # 9 mul, 6 add, 9 neg (24 ops)
 proc rigidInverse(m: Mat4x4): Mat4x4 =
   ## Only use if the transform matrix only contains rotations and
@@ -264,7 +262,7 @@ proc mulPoint*[T](t: Transform, p: Vec3[T]): Vec3[T] {.inline.} =
 
 when isMainModule:
   # {{{ Mat4x4
-  block:
+  block:  # indexing operator tests
     var m = mat4x4([[FloatT(1),   2,  3,  4],
                     [FloatT(5),   6,  7,  8],
                     [FloatT(9),  10, 11, 12],
@@ -321,7 +319,7 @@ when isMainModule:
     assert m[3,2] == 115
     assert m[3,3] == 116
 
-  block:
+  block:  # transpose test
     let m = mat4x4([[FloatT(1),   2,  3,  4],
                     [FloatT(5),   6,  7,  8],
                     [FloatT(9),  10, 11, 12],
@@ -333,9 +331,8 @@ when isMainModule:
                      [FloatT(4),  8, 12, 16]])
 
     assert m.transpose == mt
-    echo mt
 
-  block:
+  block:  # transform tests:
     let
       a = vec3f(-300,2,8000)
 
@@ -350,16 +347,27 @@ when isMainModule:
       pt = t.mulPoint(a)
       nt = t.mulNorm(a)
 
-    echo vt
-    echo t.inverse.mulVec(vt)
-
     assert t.inverse.mulVec(vt).isClose(a)
     assert t.inverse.mulPoint(pt).isClose(a)
     assert t.inverse.mulNorm(nt).isClose(a, 0.001)
 
-    echo t.mInv
-    echo t.m.inverse
-    assert t.mInv.isClose(t.m.inverse)
+    assert t.mInv.isClose(t.m.inverse, 1)
+
+  block:  # rigidInverse & affineInverse tests
+    let
+      d = translate(1,2,3)
+      rx = rotateX(10)
+      ry = rotateY(55)
+      rz = rotateY(120)
+      s = scale(1.1, 42.42, -8.6)
+      rigidT = rx * ry * rz * d
+      affineT = rx * ry * rz * s * d
+
+    assert rigidT.mInv.isClose(rigidT.m.rigidInverse)
+    assert affineT.mInv.isClose(affineT.m.rigidInverse) == false
+
+    assert rigidT.mInv.isClose(rigidT.m.affineInverse, 1)
+    assert affineT.mInv.isClose(affineT.m.affineInverse, 1)
 
   # }}}
 
