@@ -310,6 +310,12 @@ proc mul*[T](t: Transform, b: Box3[T]): Box3[T] {.inline.} =
   bt     = bt.union(t.mulPoint(vec3f(b.pMax.x, b.pMax.y, b.pMax.z)))
   result = bt
 
+proc swapsHandedness*[T](t: Transform): bool =
+  let det = t[0,0] * (t[1,1] * t[2,2] - t[1,2] * t[2,1]) -
+            t[0,1] * (t[1,0] * t[2,2] - t[1,2] * t[2,0]) +
+            t[0,2] * (t[1,0] * t[2,1] - t[1,1] * t[2,0])
+  det < 0
+
 # }}}
 
 # {{{ Tests
