@@ -71,6 +71,8 @@ template sprintf*(format: cstring, args: varargs[untyped]): string =
   s = buf
   s
 
+template notNil*[T](x: T): bool = not isNil(x)
+
 
 when isMainModule:
   assert $NegZero == "-0.0"
