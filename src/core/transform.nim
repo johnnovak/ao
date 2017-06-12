@@ -37,6 +37,9 @@ proc mat4x4*(): Mat4x4 {.inline.} =
          0, 0, 1, 0,
          0, 0, 0, 1)
 
+proc isIdentity*(t: Mat4x4): bool {.inline.} =
+  t == mat4x4()
+
 proc `[]`*(m: Mat4x4, r, c: int): FloatT {.inline.} =
   m.m[r][c]
 
@@ -140,6 +143,13 @@ proc rigidInverse(m: Mat4x4): Mat4x4 =
          m[0,1], m[1,1], m[2,1], dy,
          m[0,2], m[1,2], m[2,2], dz,
               0,      0,      0,  1)
+
+
+proc swapsHandedness*(t: Mat4x4): bool =
+  let det = t[0,0] * (t[1,1] * t[2,2] - t[1,2] * t[2,1]) -
+            t[0,1] * (t[1,0] * t[2,2] - t[1,2] * t[2,0]) +
+            t[0,2] * (t[1,0] * t[2,1] - t[1,1] * t[2,0])
+  det < 0
 
 # }}}
 # {{{ Transform
@@ -310,12 +320,6 @@ proc mul*[T](t: Transform, b: Box3[T]): Box3[T] {.inline.} =
   bt     = bt.union(t.mulPoint(vec3f(b.pMax.x, b.pMax.y, b.pMax.z)))
   result = bt
 
-proc swapsHandedness*[T](t: Transform): bool =
-  let det = t[0,0] * (t[1,1] * t[2,2] - t[1,2] * t[2,1]) -
-            t[0,1] * (t[1,0] * t[2,2] - t[1,2] * t[2,0]) +
-            t[0,2] * (t[1,0] * t[2,1] - t[1,1] * t[2,0])
-  det < 0
-
 # }}}
 
 # {{{ Tests
@@ -345,7 +349,7 @@ when isMainModule:
     assert m[3,2] == 15
     assert m[3,3] == 16
 
-  block:  # transpose test
+  block:  # transpose & isIdentity tests
     let m = mat4x4(1,   2,  3,  4,
                    5,   6,  7,  8,
                    9,  10, 11, 12,
@@ -357,6 +361,11 @@ when isMainModule:
                     4,  8, 12, 16)
 
     assert m.transpose == mt
+
+    assert isIdentity(mat4x4(1, 0, 0, 0,
+                             0, 1, 0, 0,
+                             0, 0, 1, 0,
+                             0, 0, 0, 1))
 
   block:  # transform tests:
     let
@@ -378,6 +387,9 @@ when isMainModule:
     assert t.inverse.mulNorm(nt).isClose(a, 0.001)
 
     assert t.mInv.isClose(t.m.inverse, 1)
+
+    assert rotateX(20).m.swapsHandedness == false
+    assert scale(-1,-1,-1).m.swapsHandedness == true
 
   block:  # rigidInverse & affineInverse tests
     let
