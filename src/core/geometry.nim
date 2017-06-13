@@ -352,8 +352,8 @@ type Box2[T] = object
   pMax*: Vec2[T]
 
 type
-  Box2f = Box2[FloatT]
-  Box2i = Box2[int]
+  Box2f* = Box2[FloatT]
+  Box2i* = Box2[int]
 
 proc box2f*(): Box2f {.inline.} =
   Box2f(pMin: vec2f(Inf,    Inf),
@@ -459,8 +459,8 @@ type Box3*[T] = object
   pMax*: Vec3[T]
 
 type
-  Box3f = Box3[FloatT]
-  Box3i = Box3[int]
+  Box3f* = Box3[FloatT]
+  Box3i* = Box3[int]
 
 proc box3f*(): Box3f {.inline.} =
   Box3f(pMin: vec3f(Inf,    Inf,    Inf),
@@ -580,10 +580,23 @@ proc offset*[T](b: Box3[T], p: Vec3[T]): Vec3[T] {.inline.} =
 
 type Ray* = object of RootObj
   o*: Vec3f
-  d*: Vec3f
+  d*, dInv*: Vec3f
   tMax*: FloatT
   time*: FloatT
   medium*: ref Medium
+
+proc init(r: var Ray, o, d: Vec3f, tMax, time: FloatT,
+          medium: ref Medium) {.inline.} =
+  r.o = o
+  r.d = d
+  r.dInv = vec3f(1/d.x, 1/d.y, 1/d.z)
+  r.tMax = tMax
+  r.time = time
+  r.medium = medium
+
+proc initRay*(o, d: Vec3f, tMax, time: FloatT,
+              medium: ref Medium): Ray {.inline.} =
+  init(result, o, d, tMax, time, medium)
 
 method hasNaNs*(r: Ray): bool {.base, inline.} =
   hasNaNs(r.o) or hasNaNs(r.d) or isNaN(r.tMax)
@@ -598,6 +611,17 @@ type RayDifferential* = object of Ray
   hasDifferentials*: bool
   rxOrigin*, ryOrigin*: Vec3f
   rxDirection*, ryDirection*: Vec3f
+
+proc initRayDifferential(o, d: Vec3f, tMax, time: FloatT, medium: ref Medium,
+                         hasDifferentials: bool,
+                         rxOrigin, ryOrigin: Vec3f,
+                         rxDirection, ryDirection: Vec3f): RayDifferential =
+  init(result.Ray, o, d, tMax, time, medium)
+  result.hasDifferentials = hasDifferentials
+  result.rxOrigin = rxOrigin
+  result.ryOrigin = ryOrigin
+  result.rxDirection = rxDirection
+  result.ryDirection = ryDirection
 
 method hasNaNs*(r: RayDifferential): bool {.inline.} =
   (procCall hasNaNs(Ray(r))) or
@@ -1128,23 +1152,32 @@ when isMainModule:
   # }}}
   # {{{ Ray
   block:
-    let r = Ray(o: vec3f(1, 2, 3), d: vec3f(-1, -0.5, 0))
+    let r = initRay(o = vec3f(1, 2, 3), d = vec3f(-1, -0.5, 0),
+                    tMax = 111, time = 222, medium = nil)
 
     assert r.t(3) == vec3f(-2, 0.5, 3)
     assert hasNaNs(r) == false
+    assert r.tMax == 111
+    assert r.time == 222
 
   # }}}
   # {{{ RayDifferential
   block:
-    var r = RayDifferential(o: vec3f(1, 2, 3), d: vec3f(-1, -0.5, 0))
-    r.hasDifferentials = true
-    r.rxOrigin = vec3f(1,1,1)
-    r.ryOrigin = vec3f(2,2,2)
-    r.rxDirection = vec3f(1,0,0)
-    r.ryDirection = vec3f(0,1,0)
+    let r = initRayDifferential(
+      o = vec3f(1, 2, 3), d = vec3f(-1, -0.5, 0),
+      tMax = 111, time = 222, medium = nil,
+      hasDifferentials = true,
+      rxOrigin = vec3f(1,1,1), ryOrigin = vec3f(2,2,2),
+      rxDirection = vec3f(1,0,0), ryDirection = vec3f(0,1,0))
 
     assert r.t(3) == vec3f(-2, 0.5, 3)
     assert hasNaNs(r) == false
+    assert r.tMax == 111
+    assert r.time == 222
+    assert r.rxOrigin == vec3f(1,1,1)
+    assert r.ryOrigin == vec3f(2,2,2)
+    assert r.rxDirection == vec3f(1,0,0)
+    assert r.ryDirection == vec3f(0,1,0)
 
   # }}}
 
