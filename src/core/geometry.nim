@@ -345,6 +345,65 @@ proc coordinateSystem*[T](v1: Vec3[T]): (Vec3[T], Vec3[T]) {.inline.} =
   (v2, v3)
 
 # }}}
+# {{{ Ray
+
+type Ray* = object of RootObj
+  o*: Vec3f
+  d*, dInv*: Vec3f
+  tMax*: FloatT
+  time*: FloatT
+  medium*: ref Medium
+
+proc init(r: var Ray, o, d: Vec3f, tMax, time: FloatT,
+          medium: ref Medium) {.inline.} =
+  r.o = o
+  r.d = d
+  r.dInv = vec3f(1/d.x, 1/d.y, 1/d.z)
+  r.tMax = tMax
+  r.time = time
+  r.medium = medium
+
+proc initRay*(o, d: Vec3f, tMax, time: FloatT,
+              medium: ref Medium): Ray {.inline.} =
+  init(result, o, d, tMax, time, medium)
+
+method hasNaNs*(r: Ray): bool {.base, inline.} =
+  hasNaNs(r.o) or hasNaNs(r.d) or isNaN(r.tMax)
+
+proc t*(r: Ray, t: FloatT): Vec3f {.inline.} =
+  r.o + r.d*t
+
+# }}}
+# {{{ RayDifferential
+
+type RayDifferential* = object of Ray
+  hasDifferentials*: bool
+  rxOrigin*, ryOrigin*: Vec3f
+  rxDirection*, ryDirection*: Vec3f
+
+proc initRayDifferential(o, d: Vec3f, tMax, time: FloatT, medium: ref Medium,
+                         hasDifferentials: bool,
+                         rxOrigin, ryOrigin: Vec3f,
+                         rxDirection, ryDirection: Vec3f): RayDifferential =
+  init(result.Ray, o, d, tMax, time, medium)
+  result.hasDifferentials = hasDifferentials
+  result.rxOrigin = rxOrigin
+  result.ryOrigin = ryOrigin
+  result.rxDirection = rxDirection
+  result.ryDirection = ryDirection
+
+method hasNaNs*(r: RayDifferential): bool {.inline.} =
+  (procCall hasNaNs(Ray(r))) or
+    r.hasDifferentials and (hasNaNs(r.rxOrigin) or hasNaNs(r.ryOrigin) or
+                            hasNaNs(r.rxDirection) or hasNaNs(r.ryDirection))
+
+proc scaleDifferentials*(r: var RayDifferential, s: FloatT) {.inline.} =
+  r.rxOrigin = r.o + (r.rxOrigin - r.o) * s
+  r.ryOrigin = r.o + (r.ryOrigin - r.o) * s
+  r.rxDirection = r.d + (r.rxDirection - r.d) * s
+  r.ryDirection = r.d + (r.ryDirection - r.d) * s
+
+# }}}
 # {{{ Box2
 
 type Box2[T] = object
@@ -575,64 +634,28 @@ proc offset*[T](b: Box3[T], p: Vec3[T]): Vec3[T] {.inline.} =
   if b.pMax.z > b.pMin.z: o.z /= b.pMax.z - b.pMin.z
   result = o
 
-# }}}
-# {{{ Ray
+# From https://tavianator.com/fast-branchless-raybounding-box-intersections-part-2-nans/
+# Generates false positives when the ray origin lies exactly on the bounding
+# box slabs, but overall this is still worth it because it's faster than the
+# 100% correct version.
+proc intersect*[T](b: Box3[T], r: Ray): (bool, FloatT, FloatT) {.inline.} =
+  var
+    t1 = (FloatT(b.pMin.x) - r.o.x) * r.dInv.x
+    t2 = (FloatT(b.pMax.x) - r.o.x) * r.dInv.x
+    tmin = min(t1, t2)
+    tmax = max(t1, t2)
 
-type Ray* = object of RootObj
-  o*: Vec3f
-  d*, dInv*: Vec3f
-  tMax*: FloatT
-  time*: FloatT
-  medium*: ref Medium
+  t1 = (FloatT(b.pMin.y) - r.o.y) * r.dInv.y
+  t2 = (FloatT(b.pMax.y) - r.o.y) * r.dInv.y
+  tmin = max(tmin, min(t1, t2))
+  tmax = min(tmax, max(t1, t2))
 
-proc init(r: var Ray, o, d: Vec3f, tMax, time: FloatT,
-          medium: ref Medium) {.inline.} =
-  r.o = o
-  r.d = d
-  r.dInv = vec3f(1/d.x, 1/d.y, 1/d.z)
-  r.tMax = tMax
-  r.time = time
-  r.medium = medium
+  t1 = (FloatT(b.pMin.z) - r.o.z) * r.dInv.z
+  t2 = (FloatT(b.pMax.z) - r.o.z) * r.dInv.z
+  tmin = max(tmin, min(t1, t2))
+  tmax = min(tmax, max(t1, t2))
 
-proc initRay*(o, d: Vec3f, tMax, time: FloatT,
-              medium: ref Medium): Ray {.inline.} =
-  init(result, o, d, tMax, time, medium)
-
-method hasNaNs*(r: Ray): bool {.base, inline.} =
-  hasNaNs(r.o) or hasNaNs(r.d) or isNaN(r.tMax)
-
-proc t*(r: Ray, t: FloatT): Vec3f {.inline.} =
-  r.o + r.d*t
-
-# }}}
-# {{{ RayDifferential
-
-type RayDifferential* = object of Ray
-  hasDifferentials*: bool
-  rxOrigin*, ryOrigin*: Vec3f
-  rxDirection*, ryDirection*: Vec3f
-
-proc initRayDifferential(o, d: Vec3f, tMax, time: FloatT, medium: ref Medium,
-                         hasDifferentials: bool,
-                         rxOrigin, ryOrigin: Vec3f,
-                         rxDirection, ryDirection: Vec3f): RayDifferential =
-  init(result.Ray, o, d, tMax, time, medium)
-  result.hasDifferentials = hasDifferentials
-  result.rxOrigin = rxOrigin
-  result.ryOrigin = ryOrigin
-  result.rxDirection = rxDirection
-  result.ryDirection = ryDirection
-
-method hasNaNs*(r: RayDifferential): bool {.inline.} =
-  (procCall hasNaNs(Ray(r))) or
-    r.hasDifferentials and (hasNaNs(r.rxOrigin) or hasNaNs(r.ryOrigin) or
-                            hasNaNs(r.rxDirection) or hasNaNs(r.ryDirection))
-
-proc scaleDifferentials*(r: var RayDifferential, s: FloatT) {.inline.} =
-  r.rxOrigin = r.o + (r.rxOrigin - r.o) * s
-  r.ryOrigin = r.o + (r.ryOrigin - r.o) * s
-  r.rxDirection = r.d + (r.rxDirection - r.d) * s
-  r.ryDirection = r.d + (r.ryDirection - r.d) * s
+  result = (tmin <= r.tMax and tmax > max(tmin, 0), tmin, tmax)
 
 # }}}
 
@@ -1101,6 +1124,28 @@ when isMainModule:
     assert lerp(b1, 0.25) == vec3f(-0.75, 2, 0.25)
     assert b1.offset(vec3f(-0.75, 4, 1.5)) == vec3f(0.25, 0.75, 0.5)
 
+    block:  # intersect tests
+      var
+        b = box3f(vec3f(1,1,1), vec3f(2,2,2))
+        r1 = initRay(o = vec3f(1.5, 1.5, 0), d = vec3f(0.0, 0.0, 1.0),
+                     tMax = Inf, time = 0, medium = nil)
+        r2 = initRay(o = vec3f(0.5, 0.5, 0), d = vec3f(0.0, 0.0, 1.0),
+                     tMax = Inf, time = 0, medium = nil)
+
+      var (isHit, t1, t2) = b.intersect(r1)
+      assert isHit
+      assert t1 == 1.0
+      assert t2 == 2.0
+
+      (isHit, t1, t2) = b.intersect(r2)
+      assert isHit == false
+
+      r1.tMax = 0.5
+      (isHit, t1, t2) = b.intersect(r1)
+      assert isHit == false
+      assert t1 == 1.0
+      assert t2 == 2.0
+
   # }}}
   # {{{ Box3i
   block:
@@ -1148,6 +1193,28 @@ when isMainModule:
     assert b1.volume == 100
     assert b1.expand(1) == box3i(vec3i(-3,0,-2), vec3i(4,6,5))
     assert lerp(b1, 0.25) == vec3i(-0, 2, 0)
+
+    block:  # intersect tests
+      var
+        b = box3i(vec3i(1,1,1), vec3i(2,2,2))
+        r1 = initRay(o = vec3f(1.5, 1.5, 0), d = vec3f(0.0, 0.0, 1.0),
+                     tMax = Inf, time = 0, medium = nil)
+        r2 = initRay(o = vec3f(0.5, 0.5, 0), d = vec3f(0.0, 0.0, 1.0),
+                     tMax = Inf, time = 0, medium = nil)
+
+      var (isHit, t1, t2) = b.intersect(r1)
+      assert isHit
+      assert t1 == 1.0
+      assert t2 == 2.0
+
+      (isHit, t1, t2) = b.intersect(r2)
+      assert isHit == false
+
+      r1.tMax = 0.5
+      (isHit, t1, t2) = b.intersect(r1)
+      assert isHit == false
+      assert t1 == 1.0
+      assert t2 == 2.0
 
   # }}}
   # {{{ Ray
