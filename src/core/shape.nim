@@ -1,17 +1,26 @@
 import core
+import geometry
+import transform
 
 
-# TODO this is a stub only
-type Shape* = object
-  discard
+{.experimental.}
 
-# TODO stub
-proc reverseOrientation*(s: Shape): bool =
-  false
+type Shape* = object of RootObj
+  objectToWorld*, worldToObject*: ref Transform
+  reverseOrientation*: bool
+  transformSwapsHandedness*: bool
 
-# TODO stub
-proc transformSwapHandedness*(s: Shape): bool =
-  false
+proc init(s: var Shape, objectToWorld, worldToObject: ref Transform,
+          reverseOrientation: bool) {.inline.} =
+  s.objectToWorld = objectToWorld
+  s.worldToObject = worldToObject
+  s.reverseOrientation = reverseOrientation
+  s.transformSwapsHandedness = objectToWorld.swapsHandedness()
+
+method objectBound(s: Shape): Box3f {.base.} = nil
+
+method worldBound(s: Shape): Box3f =
+  s.objectToWorld.mul(s.objectBound())
 
 
 # vim: et:ts=2:sw=2:fdm=marker
