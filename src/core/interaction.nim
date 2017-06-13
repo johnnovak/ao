@@ -52,7 +52,7 @@ type SurfaceInteraction* = object of Interaction
 
 proc shouldFlipNormal(s: SurfaceInteraction): bool {.inline.} =
   notNil(s.shape) and (s.shape.reverseOrientation xor
-                       s.shape.transformSwapHandedness)
+                       s.shape.transformSwapsHandedness)
 
 
 proc initSurfaceInteraction(p, pError, uv, wo, dpdu, dpdv, dndu, dndv: Vec3f,
