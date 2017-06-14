@@ -17,5 +17,12 @@ execute_test -d:useFloat64 geometry
 execute_test interaction
 execute_test -d:useFloat64 interaction
 
+execute_test medium
+execute_test -d:useFloat64 medium
+
+execute_test shape
+execute_test -d:useFloat64 shape
+
 execute_test transform
 execute_test -d:useFloat64 transform
+

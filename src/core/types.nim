@@ -4,12 +4,11 @@ import medium
 import transform
 
 
-# Common types
-
 type Shape* = object of RootObj
   objectToWorld*, worldToObject*: ref Transform
   reverseOrientation*: bool
   transformSwapsHandedness*: bool
+
 
 type Interaction* = object of RootObj
   p*, pError*, n*, wo*: Vec3f
