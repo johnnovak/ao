@@ -1,16 +1,11 @@
 import core
 import geometry
+import types
+import interaction
 import transform
 
 
 {.experimental.}
-
-type Shape* = object of RootObj
-  objectToWorld*, worldToObject*: ref Transform
-  reverseOrientation*: bool
-  transformSwapsHandedness*: bool
-
-import interaction
 
 proc init(s: var Shape, objectToWorld, worldToObject: ref Transform,
           reverseOrientation: bool) {.inline.} =

@@ -1,4 +1,5 @@
 import core
+import types
 import geometry
 import medium
 import shape
@@ -7,11 +8,6 @@ import shape
 {.experimental.}
 
 # {{{ Interaction
-
-type Interaction* = object of RootObj
-  p, pError, n, wo: Vec3f
-  time: FloatT
-  mediumInterface: ref MediumInterface
 
 proc init(self: var Interaction, p, pError, n, wo: Vec3f, time: FloatT,
           mediumInterface: ref MediumInterface) =
@@ -40,15 +36,6 @@ proc isSurfaceInteraction(i: Interaction): bool {.inline.} =
 
 # }}}
 # {{{ SurfaceInteraction
-
-type Shading = object
-  n, dpdu, dpdv, dndu, dndv: Vec3f
-
-type SurfaceInteraction* = object of Interaction
-  uv: Vec3f
-  dpdu, dpdv, dndu, dndv: Vec3f
-  shape: ref Shape
-  shading: Shading
 
 proc shouldFlipNormal(s: SurfaceInteraction): bool {.inline.} =
   notNil(s.shape) and (s.shape.reverseOrientation xor
