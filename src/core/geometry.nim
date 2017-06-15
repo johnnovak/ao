@@ -1,5 +1,5 @@
 import core
-import medium
+import types
 
 import math
 
@@ -9,13 +9,6 @@ import math
 # modification.
 
 # {{{ Vec2
-
-type Vec2*[T] = object
-  x*, y*: T
-
-type
-  Vec2f* = Vec2[FloatT]
-  Vec2i* = Vec2[int]
 
 proc hasNaNs*[T](a: Vec2[T]): bool {.inline.} =
   isNaN(a.x) or isNaN(a.y)
@@ -152,13 +145,6 @@ proc distance2*[T](a, b: Vec2[T]): FloatT {.inline.} =
 
 # }}}
 # {{{ Vec3
-
-type Vec3*[T] = object
-  x*, y*, z*: T
-
-type
-  Vec3f* = Vec3[FloatT]
-  Vec3i* = Vec3[int]
 
 proc hasNaNs*[T](a: Vec3[T]): bool {.inline.} =
   isNaN(a.x) or isNaN(a.y) or isNaN(a.z)
@@ -347,13 +333,6 @@ proc coordinateSystem*[T](v1: Vec3[T]): (Vec3[T], Vec3[T]) {.inline.} =
 # }}}
 # {{{ Ray
 
-type Ray* = object of RootObj
-  o*: Vec3f
-  d*, dInv*: Vec3f
-  tMax*: FloatT
-  time*: FloatT
-  medium*: ref Medium
-
 proc init(r: var Ray, o, d: Vec3f, tMax, time: FloatT,
           medium: ref Medium) {.inline.} =
   r.o = o
@@ -375,11 +354,6 @@ proc t*(r: Ray, t: FloatT): Vec3f {.inline.} =
 
 # }}}
 # {{{ RayDifferential
-
-type RayDifferential* = object of Ray
-  hasDifferentials*: bool
-  rxOrigin*, ryOrigin*: Vec3f
-  rxDirection*, ryDirection*: Vec3f
 
 proc initRayDifferential(o, d: Vec3f, tMax, time: FloatT, medium: ref Medium,
                          hasDifferentials: bool,
@@ -405,14 +379,6 @@ proc scaleDifferentials*(r: var RayDifferential, s: FloatT) {.inline.} =
 
 # }}}
 # {{{ Box2
-
-type Box2[T] = object
-  pMin*: Vec2[T]
-  pMax*: Vec2[T]
-
-type
-  Box2f* = Box2[FloatT]
-  Box2i* = Box2[int]
 
 proc box2f*(): Box2f {.inline.} =
   Box2f(pMin: vec2f(Inf,    Inf),
@@ -512,14 +478,6 @@ proc offset*[T](b: Box2[T], p: Vec2[T]): Vec2[T] {.inline.} =
 
 # }}}
 # {{{ Box3
-
-type Box3*[T] = object
-  pMin*: Vec3[T]
-  pMax*: Vec3[T]
-
-type
-  Box3f* = Box3[FloatT]
-  Box3i* = Box3[int]
 
 proc box3f*(): Box3f {.inline.} =
   Box3f(pMin: vec3f(Inf,    Inf,    Inf),

@@ -1,8 +1,7 @@
 import core
 import geometry
-import types
-import interaction
 import transform
+import types
 
 
 {.experimental.}

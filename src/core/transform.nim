@@ -1,14 +1,11 @@
 import core
 import geometry
+import types
 
 import math
 
 
 # {{{ Mat4x4
-
-type Mat4x4* = object
-  # Matrix elements (coefficients) are stored in row-major form.
-  m: array[4, array[4, FloatT]]
 
 proc mat4x4*(m00, m01, m02, m03,
              m10, m11, m12, m13,
@@ -153,9 +150,6 @@ proc swapsHandedness*(t: Mat4x4): bool =
 
 # }}}
 # {{{ Transform
-
-type Transform* = object
-  m, mInv: Mat4x4
 
 proc transform*(m: Mat4x4): Transform {.inline.} =
   Transform(m: m, mInv: m.inverse)

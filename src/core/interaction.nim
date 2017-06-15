@@ -1,8 +1,6 @@
 import core
-import types
 import geometry
-import medium
-import shape
+import types
 
 
 {.experimental.}
