@@ -39,9 +39,6 @@ proc isClose*(a, b: float32, maxRelDiff: float32 = 1e-5): bool =
 proc isClose*(a, b: float64, maxRelDiff: float64 = 1e-10): bool =
   isCloseFn(a, b, maxRelDiff)
 
-proc sgn*[T: SomeNumber](a: T): int {.inline.} =
-  cast[int](T(0) < a) - cast[int](a < T(0))
-
 proc modulo*[T: SomeReal](x: T): T {.inline.} =
   abs(x - floor(x))
 
