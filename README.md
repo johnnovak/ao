@@ -11,3 +11,10 @@
   “space,” Ao resists the forces of darkness."
   [source](http://everythingunderthemoon.net/forum/comprehensive-list-gods-goddesses-worldwide-t20390.html)
 
+# Usage
+
+To run all the unit tests:
+
+```
+nim c -r test/allTests
+```
