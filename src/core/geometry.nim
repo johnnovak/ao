@@ -1,3 +1,11 @@
+import common, types
+import math
+
+export types.Vec2f, types.Vec2i, types.Vec3f, types.Vec3i
+export types.Box2f, types.Box2i, types.Box3f, types.Box3i
+export types.Ray
+export types.RayDifferential
+
 # {{{ Vec2
 
 proc hasNaNs*[T](a: Vec2[T]): bool {.inline.} =

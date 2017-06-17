@@ -1,3 +1,8 @@
+import common, types, geometry
+
+export types.Interaction
+export types.SurfaceInteraction
+
 # {{{ Interaction
 
 proc init(self: var Interaction, p, pError, n, wo: Vec3f, time: FloatT,

@@ -1,5 +1,5 @@
+import common
 import math, unittest, times
-import core
 
 
 suite "core/commonTests":

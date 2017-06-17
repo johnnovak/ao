@@ -1,3 +1,10 @@
+import common, types, transform
+
+export types.Shape
+
+{.experimental.}
+
+# {{{ Shape
 proc init(s: var Shape, objectToWorld, worldToObject: ref Transform,
           reverseOrientation: bool) {.inline.} =
   s.objectToWorld = objectToWorld
@@ -19,5 +26,7 @@ method intersectP*(r: Ray, testAlphaTexture: bool = true): bool {.base.} =
   nil
 
 method area*(s: Shape): FloatT {.base.} = 0
+
+# }}}
 
 # vim: et:ts=2:sw=2:fdm=marker

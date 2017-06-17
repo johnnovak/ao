@@ -1,3 +1,9 @@
+import common, types, geometry
+import math
+
+export types.Mat4x4
+export types.Transform
+
 # {{{ Mat4x4
 
 proc mat4x4*(m00, m01, m02, m03,

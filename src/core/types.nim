@@ -1,7 +1,5 @@
 import math
 
-{.experimental.}
-
 when defined(useFloat64):
   type FloatT* = float64
 else:

@@ -1,3 +1,8 @@
+import types
+import math
+
+export types.FloatT
+
 template f32*[T: SomeNumber](x: T): float32 = float32(x)
 template f64*[T: SomeNumber](x: T): float64 = float64(x)
 

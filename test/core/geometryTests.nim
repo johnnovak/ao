@@ -1,6 +1,5 @@
+import common, geometry
 import math, unittest, times
-import core
-
 
 # {{{ Vec2f
 

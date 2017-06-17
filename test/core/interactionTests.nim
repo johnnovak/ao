@@ -1,6 +1,5 @@
+import common, geometry, interaction
 import math, unittest, times
-import core
-
 
 # {{{ Interaction
 
