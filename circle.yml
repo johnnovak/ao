@@ -25,7 +25,6 @@ dependencies:
     - "~/bin/"
     - "~/nim/"
     - "~/nimble/"
-    - "~/.nimble/"
 
 ## Customize test commands
 test:
