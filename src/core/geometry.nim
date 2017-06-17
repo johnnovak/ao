@@ -1,8 +1,5 @@
-import core
-import types
-
+import corecommon, coretypes
 import math
-
 
 # WARNING: For efficiency reasons, all geometry types in this file can perform
 # mutable operations on themselves and/or expose their encapsulated data for

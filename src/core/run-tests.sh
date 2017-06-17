@@ -8,17 +8,14 @@ function execute_test {
   set +x
 }
 
-execute_test core
-execute_test -d:useFloat64 core
+execute_test corecommon
+execute_test -d:useFloat64 corecommon
 
 execute_test geometry
 execute_test -d:useFloat64 geometry
 
 execute_test interaction
 execute_test -d:useFloat64 interaction
-
-execute_test medium
-execute_test -d:useFloat64 medium
 
 execute_test shape
 execute_test -d:useFloat64 shape

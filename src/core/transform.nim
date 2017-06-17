@@ -1,9 +1,5 @@
-import core
-import geometry
-import types
-
+import corecommon, coretypes, geometry
 import math
-
 
 # {{{ Mat4x4
 
@@ -66,14 +62,14 @@ proc `*`(a, b: Mat4x4): Mat4x4 =
                        a[i,2] * b[2,j] +
                        a[i,3] * b[3,j]
 
-proc transpose(m: Mat4x4): Mat4x4 =
+proc transpose*(m: Mat4x4): Mat4x4 =
   mat4x4(m[0,0], m[1,0], m[2,0], m[3,0],
          m[0,1], m[1,1], m[2,1], m[3,1],
          m[0,2], m[1,2], m[2,2], m[3,2],
          m[0,3], m[1,3], m[2,3], m[3,3])
 
 # 1 div, 94 mul, 49 add/sub, 8 neg (152 ops)
-proc inverse(m: Mat4x4): Mat4x4 =
+proc inverse*(m: Mat4x4): Mat4x4 =
   let
     s0 = m[0,0] * m[1,1] - m[1,0] * m[0,1]
     s1 = m[0,0] * m[1,2] - m[1,0] * m[0,2]
@@ -115,7 +111,7 @@ proc inverse(m: Mat4x4): Mat4x4 =
   result.m[3][3] = ( m[2,0] * s3 - m[2,1] * s1 + m[2,2] * s0) * invDet
 
 
-proc affineInverse(m: Mat4x4): Mat4x4 =
+proc affineInverse*(m: Mat4x4): Mat4x4 =
   ## Perform an inverse and make sure the bottom row always contains
   ## [0, 0, 0, 1].
   result = m.inverse
@@ -125,7 +121,7 @@ proc affineInverse(m: Mat4x4): Mat4x4 =
   result.m[3][3] = 1
 
 # 9 mul, 6 add, 9 neg (24 ops)
-proc rigidInverse(m: Mat4x4): Mat4x4 =
+proc rigidInverse*(m: Mat4x4): Mat4x4 =
   ## Only use if the transform matrix only contains rotations and
   ## translations.
 

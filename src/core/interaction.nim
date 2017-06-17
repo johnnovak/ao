@@ -1,7 +1,4 @@
-import core
-import geometry
-import types
-
+import corecommon, coretypes, geometry
 
 {.experimental.}
 
@@ -20,29 +17,28 @@ proc initInteraction*(p, pError, n, wo: Vec3f,
     time: FloatT, mediumInterface: ref MediumInterface = nil): Interaction =
   init(result, p, pError, n, wo, time, mediumInterface)
 
-proc p(i: Interaction): Vec3f {.inline.} = i.p
-proc pError(i: Interaction): Vec3f {.inline.} = i.pError
-proc n(i: Interaction): Vec3f {.inline.} = i.n
-proc wo(i: Interaction): Vec3f {.inline.} = i.wo
-proc time(i: Interaction): FloatT {.inline.} = i.time
-
-proc mediumInterface(i: Interaction): ref MediumInterface {.inline.} =
+proc p*(i: Interaction): Vec3f {.inline.} = i.p
+proc pError*(i: Interaction): Vec3f {.inline.} = i.pError
+proc n*(i: Interaction): Vec3f {.inline.} = i.n
+proc wo*(i: Interaction): Vec3f {.inline.} = i.wo
+proc time*(i: Interaction): FloatT {.inline.} = i.time
+proc mediumInterface*(i: Interaction): ref MediumInterface {.inline.} =
   i.mediumInterface
 
-proc isSurfaceInteraction(i: Interaction): bool {.inline.} =
+proc isSurfaceInteraction*(i: Interaction): bool {.inline.} =
   i.n != vec3f(0,0,0)
 
 # }}}
 # {{{ SurfaceInteraction
 
-proc shouldFlipNormal(s: SurfaceInteraction): bool {.inline.} =
+proc shouldFlipNormal*(s: SurfaceInteraction): bool {.inline.} =
   notNil(s.shape) and (s.shape.reverseOrientation xor
                        s.shape.transformSwapsHandedness)
 
 
-proc initSurfaceInteraction(p, pError, uv, wo, dpdu, dpdv, dndu, dndv: Vec3f,
-                            time: FloatT,
-                            shape: ref Shape): SurfaceInteraction =
+proc initSurfaceInteraction*(p, pError, uv, wo, dpdu, dpdv, dndu, dndv: Vec3f,
+                             time: FloatT,
+                             shape: ref Shape): SurfaceInteraction =
 
   init(result.Interaction, p, pError, n = cross(dpdu, dpdv).norm, wo,
        time, nil)
@@ -73,9 +69,9 @@ proc dndv*(s: SurfaceInteraction): Vec3f {.inline.} = s.dndv
 proc shape*(s: SurfaceInteraction): ref Shape {.inline.} = s.shape
 
 
-proc setShadingGeometry(s: var SurfaceInteraction,
-                        dpdus, dpdvs, dndus, dndvs: Vec3f,
-                        orientationIsAuthoritative: bool) =
+proc setShadingGeometry*(s: var SurfaceInteraction,
+                         dpdus, dpdvs, dndus, dndvs: Vec3f,
+                         orientationIsAuthoritative: bool) =
     s.n = cross(dpdus, dpdvs).norm
 
     if s.shouldFlipNormal:

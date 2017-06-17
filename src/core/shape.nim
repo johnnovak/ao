@@ -1,8 +1,4 @@
-import core
-import geometry
-import transform
-import types
-
+import corecommon, coretypes, geometry, transform
 
 {.experimental.}
 
@@ -26,7 +22,7 @@ method intersect*(
 method intersectP*(r: Ray, testAlphaTexture: bool = true): bool {.base.} =
   nil
 
-method area(s: Shape): FloatT {.base.} = 0
+method area*(s: Shape): FloatT {.base.} = 0
 
 
 # vim: et:ts=2:sw=2:fdm=marker
