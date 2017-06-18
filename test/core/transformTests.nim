@@ -10,42 +10,42 @@ suite "core/transformTests - Mat4x4":
                    5,   6,  7,  8,
                    9,  10, 11, 12,
                    13, 14, 15, 16)
-
-    assert m[0,0] == 1
-    assert m[0,1] == 2
-    assert m[0,2] == 3
-    assert m[0,3] == 4
-    assert m[1,0] == 5
-    assert m[1,1] == 6
-    assert m[1,2] == 7
-    assert m[1,3] == 8
-    assert m[2,0] == 9
-    assert m[2,1] == 10
-    assert m[2,2] == 11
-    assert m[2,3] == 12
-    assert m[3,0] == 13
-    assert m[3,1] == 14
-    assert m[3,2] == 15
-    assert m[3,3] == 16
+    check:
+      m[0,0] == 1
+      m[0,1] == 2
+      m[0,2] == 3
+      m[0,3] == 4
+      m[1,0] == 5
+      m[1,1] == 6
+      m[1,2] == 7
+      m[1,3] == 8
+      m[2,0] == 9
+      m[2,1] == 10
+      m[2,2] == 11
+      m[2,3] == 12
+      m[3,0] == 13
+      m[3,1] == 14
+      m[3,2] == 15
+      m[3,3] == 16
 
   test "transpose":
-      let m = mat4x4(1,   2,  3,  4,
-                     5,   6,  7,  8,
-                     9,  10, 11, 12,
-                     13, 14, 15, 16)
+    let m = mat4x4(1,   2,  3,  4,
+                   5,   6,  7,  8,
+                   9,  10, 11, 12,
+                   13, 14, 15, 16)
 
-      let mt = mat4x4(1,  5,  9, 13,
-                      2,  6, 10, 14,
-                      3,  7, 11, 15,
-                      4,  8, 12, 16)
+    let mt = mat4x4(1,  5,  9, 13,
+                    2,  6, 10, 14,
+                    3,  7, 11, 15,
+                    4,  8, 12, 16)
 
-      assert m.transpose == mt
+    check m.transpose == mt
 
   test "isIdentity":
-      assert isIdentity(mat4x4(1, 0, 0, 0,
-                               0, 1, 0, 0,
-                               0, 0, 1, 0,
-                               0, 0, 0, 1))
+    check isIdentity(mat4x4(1, 0, 0, 0,
+                            0, 1, 0, 0,
+                            0, 0, 1, 0,
+                            0, 0, 0, 1))
 
 # }}}
 # {{{ Transform
@@ -67,14 +67,15 @@ suite "core/transformTests - Transform":
       pt = t.mulPoint(a)
       nt = t.mulNorm(a)
 
-    assert t.inverse.mulVec(vt).isClose(a)
-    assert t.inverse.mulPoint(pt).isClose(a)
-    assert t.inverse.mulNorm(nt).isClose(a, 0.001)
+    check:
+      t.inverse.mulVec(vt).isClose(a)
+      t.inverse.mulPoint(pt).isClose(a)
+      t.inverse.mulNorm(nt).isClose(a, 0.001)
 
-    assert t.mInv.isClose(t.m.inverse, 1)
+      t.mInv.isClose(t.m.inverse, 1)
 
-    assert rotateX(20).m.swapsHandedness == false
-    assert scale(-1,-1,-1).m.swapsHandedness == true
+      rotateX(20).m.swapsHandedness == false
+      scale(-1,-1,-1).m.swapsHandedness == true
 
   test "rigidInverse & affineInverse":
     let
@@ -86,27 +87,29 @@ suite "core/transformTests - Transform":
       rigidT = rx * ry * rz * d
       affineT = rigidT * s
 
-    assert rigidT.mInv.isClose(rigidT.m.rigidInverse)
-    assert affineT.mInv.isClose(affineT.m.rigidInverse) == false
+    check:
+      rigidT.mInv.isClose(rigidT.m.rigidInverse)
+      affineT.mInv.isClose(affineT.m.rigidInverse) == false
 
-    assert rigidT.mInv.isClose(rigidT.m.affineInverse, 1)
-    assert affineT.mInv.isClose(affineT.m.affineInverse, 1)
+      rigidT.mInv.isClose(rigidT.m.affineInverse, 1)
+      affineT.mInv.isClose(affineT.m.affineInverse, 1)
 
   test "lookAt":
-      let
-        t = lookAt(eye = vec3f(10,5,7), at = vec3f(3,5,7), up = vec3f(0,1,0))
-        p1 = vec3f(3,4,5)
-        p2 = t.mulPoint(p1)
+    let
+      t = lookAt(eye = vec3f(10,5,7), at = vec3f(3,5,7), up = vec3f(0,1,0))
+      p1 = vec3f(3,4,5)
+      p2 = t.mulPoint(p1)
 
-      assert p2.isClose(vec3f(2,-1,-7))
-      assert t.inverse.mulPoint(p2).isClose(p1)
+    check:
+      p2.isClose(vec3f(2,-1,-7))
+      t.inverse.mulPoint(p2).isClose(p1)
 
   test "box transform":
     var
       b = box3f(vec3f(1,2,3), vec3f(2,4,6))
       t = rotateZ(90)
 
-    assert t.mul(b).isClose(box3f(vec3f(-4,1,3), vec3f(-2,2,6)))
+    check t.mul(b).isClose(box3f(vec3f(-4,1,3), vec3f(-2,2,6)))
 
 # }}}
 
