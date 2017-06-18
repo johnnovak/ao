@@ -9,9 +9,22 @@
   including Aoturoa, “enduring day, this world,” Aomarama, “bright day, world
   of light and life”. With his companions, Ata, “morning,” and Whaitua,
   “space,” Ao resists the forces of darkness."
-  [source](http://everythingunderthemoon.net/forum/comprehensive-list-gods-goddesses-worldwide-t20390.html)
+  [(source)](http://everythingunderthemoon.net/forum/comprehensive-list-gods-goddesses-worldwide-t20390.html)
 
-# Usage
+## Overview
+
+**Ao** is a Nim implementation of [pbrt](http://www.pbrt.org/), the famous
+physically based ray tracer. I am adding bits and pieces as I'm progressing
+with reading the book, which is going at a leisurely pace as I'm doing this in
+my free time for enjoyment.
+
+You can follow the development at [my blog](http://blog.johnnovak.net/tag/Ao)
+if you're interested.
+
+Requires [devel branch Nim](https://github.com/nim-lang/Nim#compiling).
+I regularly test the code on Windows, Linux and Mac OS X.
+
+## Tests
 
 To run all the unit tests:
 
