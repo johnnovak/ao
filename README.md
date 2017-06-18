@@ -2,7 +2,7 @@
 
 *Physically based ray tracer in Nim*
 
-  "In the Polynesian mythology of the Maori, Ao ("daylight") is one of the
+> "In the Polynesian mythology of the Maori, Ao ("daylight") is one of the
   primal deities who are the unborn forces of nature. Ao is the
   personification of light and the ordinary world, as opposed to darkness and
   the underworld. He is spoken of under many forms or manifestations,
