@@ -5,7 +5,7 @@ export types.Shape
 {.experimental.}
 
 # {{{ Shape
-proc init(s: var Shape, objectToWorld, worldToObject: ref Transform,
+proc init*(s: var Shape, objectToWorld, worldToObject: ref Transform,
           reverseOrientation: bool) {.inline.} =
   s.objectToWorld = objectToWorld
   s.worldToObject = worldToObject

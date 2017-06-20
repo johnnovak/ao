@@ -335,6 +335,7 @@ proc init(r: var Ray, o, d: Vec3f, tMax, time: FloatT,
           medium: ref Medium) {.inline.} =
   r.o = o
   r.d = d
+  # TODO only calculate on demand?
   r.dInv = vec3f(1/d.x, 1/d.y, 1/d.z)
   r.tMax = tMax
   r.time = time

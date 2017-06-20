@@ -65,4 +65,36 @@ template sprintf*(format: cstring, args: varargs[untyped]): string =
 
 template notNil*[T](x: T): bool = not isNil(x)
 
+proc nextFloat32Up(f: float32): float32 =
+  if isNaN(f) or f == Inf: return f
+  var n = cast[uint32](f)
+  if n == 0x80000000'u32: n = 0  # turn -0.0 to +0.0
+  if f > 0: n += 1
+  else:     n -= 1
+  result = cast[float32](n)
+
+proc nextFloat32Down(f: float32): float32 =
+  if isNaN(f) or f == NegInf: return f
+  var n = cast[uint32](f)
+  if n == 0: n = 0x80000000'u32  # turn +0.0 to -0.0
+  if f > 0: n -= 1
+  else:     n += 1
+  result = cast[float32](n)
+
+proc nextFloat64Up(f: float64): float64 =
+  if isNaN(f) or f == Inf: return f
+  var n = cast[uint64](f)
+  if n == 0x8000000000000000'u64: n = 0  # turn -0.0 to +0.0
+  if f > 0: n += 1
+  else:     n -= 1
+  result = cast[float64](n)
+
+proc nextFloat64Down(f: float64): float64 =
+  if isNaN(f) or f == NegInf: return f
+  var n = cast[uint64](f)
+  if n == 0: n = 0x8000000000000000'u64  # turn +0.0 to -0.0
+  if f > 0: n -= 1
+  else:     n += 1
+  result = cast[float64](n)
+
 # vim: et:ts=2:sw=2:fdm=marker
