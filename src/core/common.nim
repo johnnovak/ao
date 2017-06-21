@@ -3,8 +3,12 @@ import math
 
 export types.FloatT
 
+const debug* = not defined(release)
+
 template f32*[T: SomeNumber](x: T): float32 = float32(x)
 template f64*[T: SomeNumber](x: T): float64 = float64(x)
+
+template notNil*[T](x: T): bool = not isNil(x)
 
 const
   InvPi*   = 0.31830988618379067154
@@ -22,6 +26,38 @@ proc isNaN*(v: float64): bool {.inline.} =
 
 proc isNaN*[T: SomeInteger](x: T): bool {.inline.} =
   false
+
+proc nextFloat*(f: float32): float32 =
+  if isNaN(f) or f == Inf: return f
+  var n = cast[uint32](f)
+  if n == 0x80000000'u32: n = 0  # turn -0.0 to +0.0
+  if f >= 0: n += 1
+  else:      n -= 1
+  result = cast[float32](n)
+
+proc prevFloat*(f: float32): float32 =
+  if isNaN(f) or f == NegInf: return f
+  var n = cast[uint32](f)
+  if n == 0: n = 0x80000000'u32  # turn +0.0 to -0.0
+  if f > 0: n -= 1
+  else:     n += 1
+  result = cast[float32](n)
+
+proc nextFloat*(f: float64): float64 =
+  if isNaN(f) or f == Inf: return f
+  var n = cast[uint64](f)
+  if n == 0x8000000000000000'u64: n = 0  # turn -0.0 to +0.0
+  if f >= 0: n += 1
+  else:      n -= 1
+  result = cast[float64](n)
+
+proc prevFloat*(f: float64): float64 =
+  if isNaN(f) or f == NegInf: return f
+  var n = cast[uint64](f)
+  if n == 0: n = 0x8000000000000000'u64  # turn +0.0 to -0.0
+  if f > 0: n -= 1
+  else:     n += 1
+  result = cast[float64](n)
 
 proc isCloseFn[T: SomeReal](a, b: T, maxRelDiff: T): bool =
   let
@@ -63,39 +99,5 @@ template sprintf*(format: cstring, args: varargs[untyped]): string =
   var s = newString(buf.len)
   s = buf
   s
-
-template notNil*[T](x: T): bool = not isNil(x)
-
-proc nextFloat*(f: float32): float32 =
-  if isNaN(f) or f == Inf: return f
-  var n = cast[uint32](f)
-  if n == 0x80000000'u32: n = 0  # turn -0.0 to +0.0
-  if f > 0: n += 1
-  else:     n -= 1
-  result = cast[float32](n)
-
-proc prevFloat*(f: float32): float32 =
-  if isNaN(f) or f == NegInf: return f
-  var n = cast[uint32](f)
-  if n == 0: n = 0x80000000'u32  # turn +0.0 to -0.0
-  if f > 0: n -= 1
-  else:     n += 1
-  result = cast[float32](n)
-
-proc nextFloat*(f: float64): float64 =
-  if isNaN(f) or f == Inf: return f
-  var n = cast[uint64](f)
-  if n == 0x8000000000000000'u64: n = 0  # turn -0.0 to +0.0
-  if f > 0: n += 1
-  else:     n -= 1
-  result = cast[float64](n)
-
-proc prevFloat*(f: float64): float64 =
-  if isNaN(f) or f == NegInf: return f
-  var n = cast[uint64](f)
-  if n == 0: n = 0x8000000000000000'u64  # turn +0.0 to -0.0
-  if f > 0: n -= 1
-  else:     n += 1
-  result = cast[float64](n)
 
 # vim: et:ts=2:sw=2:fdm=marker

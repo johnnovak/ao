@@ -46,5 +46,39 @@ suite "core/commonTests":
     var s = sprintf("stuff: %f", 123.4)
     check s == "stuff: 123.400000"
 
+  test "prevFloat & nextFloat (float32)":
+    let infinity: float32 = Inf
+    let negInfinity: float32 = NegInf
+    let negativeZero: float32 = NegZero
+    check:
+      nextFloat(infinity) == infinity
+      prevFloat(infinity) < infinity
+      nextFloat(prevFloat(infinity)) == infinity
+      nextFloat(0'f32) > 0
+      nextFloat(negativeZero) > 0
+
+      prevFloat(negInfinity) == negInfinity
+      nextFloat(negInfinity) > negInfinity
+      prevFloat(nextFloat(negInfinity)) == negInfinity
+      prevFloat(0'f32) < 0
+      prevFloat(negativeZero) < 0
+
+  test "prevFloat & nextFloat (float64)":
+    let infinity: float64 = Inf
+    let negInfinity: float64 = NegInf
+    let negativeZero: float64 = NegZero
+    check:
+      nextFloat(infinity) == infinity
+      prevFloat(infinity) < infinity
+      nextFloat(prevFloat(infinity)) == infinity
+      nextFloat(0'f64) > 0
+      nextFloat(negativeZero) > 0
+
+      prevFloat(negInfinity) == negInfinity
+      nextFloat(negInfinity) > negInfinity
+      prevFloat(nextFloat(negInfinity)) == negInfinity
+      prevFloat(0'f64) < 0
+      prevFloat(negativeZero) < 0
+
 
 # vim: et:ts=2:sw=2:fdm=marker
