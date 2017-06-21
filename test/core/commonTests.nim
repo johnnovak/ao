@@ -7,7 +7,18 @@ suite "core/commonTests":
   test "isNan":
     check:
       isNaN(0'f32/0'f32)
-      not isNaN(1'i32)
+      not isNaN(0'f32)
+      not isNaN(1'f32)
+      not isNaN(-1'f32)
+      not isNaN(Inf)
+      not isNaN(-Inf)
+
+      isNaN(0'f64/0'f64)
+      not isNaN(0'f64)
+      not isNaN(1'f64)
+      not isNaN(-1'f64)
+      not isNaN(Inf)
+      not isNaN(-Inf)
 
   test "lerp":
     check:

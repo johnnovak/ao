@@ -7,8 +7,6 @@ template f32*[T: SomeNumber](x: T): float32 = float32(x)
 template f64*[T: SomeNumber](x: T): float64 = float64(x)
 
 const
-  ShadowEpsilon* = 0.0001
-
   InvPi*   = 0.31830988618379067154
   Inv2Pi*  = 0.15915494309189533577
   Inv4Pi*  = 0.07957747154594766788
@@ -16,10 +14,13 @@ const
   PiOver4* = 0.78539816339744830961
   Sqrt2*   = 1.41421356237309504880
 
-template isNaN*[T: SomeReal](x: T): bool =
-  classify(x) == fcNan
+proc isNaN*(v: float32): bool {.inline.} =
+  (cast[uint32](v) and 0x7fffffff'u32) > 0x7f800000'u32
 
-template isNaN*[T: SomeInteger](x: T): bool =
+proc isNaN*(v: float64): bool {.inline.} =
+  (cast[uint64](v) and 0x7fffffffffffffff'u64) > 0x7ff0000000000000'u64
+
+proc isNaN*[T: SomeInteger](x: T): bool {.inline.} =
   false
 
 proc isCloseFn[T: SomeReal](a, b: T, maxRelDiff: T): bool =
@@ -65,7 +66,7 @@ template sprintf*(format: cstring, args: varargs[untyped]): string =
 
 template notNil*[T](x: T): bool = not isNil(x)
 
-proc nextFloat32Up(f: float32): float32 =
+proc nextFloat*(f: float32): float32 =
   if isNaN(f) or f == Inf: return f
   var n = cast[uint32](f)
   if n == 0x80000000'u32: n = 0  # turn -0.0 to +0.0
@@ -73,7 +74,7 @@ proc nextFloat32Up(f: float32): float32 =
   else:     n -= 1
   result = cast[float32](n)
 
-proc nextFloat32Down(f: float32): float32 =
+proc prevFloat*(f: float32): float32 =
   if isNaN(f) or f == NegInf: return f
   var n = cast[uint32](f)
   if n == 0: n = 0x80000000'u32  # turn +0.0 to -0.0
@@ -81,7 +82,7 @@ proc nextFloat32Down(f: float32): float32 =
   else:     n += 1
   result = cast[float32](n)
 
-proc nextFloat64Up(f: float64): float64 =
+proc nextFloat*(f: float64): float64 =
   if isNaN(f) or f == Inf: return f
   var n = cast[uint64](f)
   if n == 0x8000000000000000'u64: n = 0  # turn -0.0 to +0.0
@@ -89,7 +90,7 @@ proc nextFloat64Up(f: float64): float64 =
   else:     n -= 1
   result = cast[float64](n)
 
-proc nextFloat64Down(f: float64): float64 =
+proc prevFloat*(f: float64): float64 =
   if isNaN(f) or f == NegInf: return f
   var n = cast[uint64](f)
   if n == 0: n = 0x8000000000000000'u64  # turn +0.0 to -0.0
