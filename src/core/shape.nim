@@ -18,12 +18,11 @@ method worldBound*(s: Shape): Box3f {.base.} =
   s.objectToWorld.mul(s.objectBound())
 
 # Out params: (isHit, tHit, isect)
-method intersect*(
-  r: Ray, testAlphaTexture: bool = true
-): (bool, FloatT, SurfaceInteraction) {.base.} = nil
+method intersect*(s: Shape, r: Ray, testAlphaTexture: bool = true):
+                             (bool, FloatT, SurfaceInteraction) {.base.} = nil
 
-method intersectP*(r: Ray, testAlphaTexture: bool = true): bool {.base.} =
-  nil
+method intersectP*(s: Shape, r: Ray, testAlphaTexture: bool = true):
+                                                           bool {.base.} = nil
 
 method area*(s: Shape): FloatT {.base.} = 0
 
