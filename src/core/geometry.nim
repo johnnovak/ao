@@ -596,24 +596,26 @@ proc offset*[T](b: Box3[T], p: Vec3[T]): Vec3[T] {.inline.} =
 # box slabs, but overall this is still worth it because it's faster than the
 # 100% correct version.
 proc intersect*[T](b: Box3[T], r: Ray): (bool, FloatT, FloatT) {.inline.} =
+  const errAdjust = 1 + 2 * gamma(3)
   var
     t1 = (FloatT(b.pMin.x) - r.o.x) * r.dInv.x
     t2 = (FloatT(b.pMax.x) - r.o.x) * r.dInv.x
     tmin = min(t1, t2)
-    tmax = max(t1, t2)
+    tmax = max(t1, t2) * errAdjust
 
   t1 = (FloatT(b.pMin.y) - r.o.y) * r.dInv.y
   t2 = (FloatT(b.pMax.y) - r.o.y) * r.dInv.y
   tmin = max(tmin, min(t1, t2))
-  tmax = min(tmax, max(t1, t2))
+  tmax = min(tmax, max(t1, t2) * errAdjust)
 
   t1 = (FloatT(b.pMin.z) - r.o.z) * r.dInv.z
   t2 = (FloatT(b.pMax.z) - r.o.z) * r.dInv.z
   tmin = max(tmin, min(t1, t2))
-  tmax = min(tmax, max(t1, t2))
+  tmax = min(tmax, max(t1, t2) * errAdjust)
 
   result = (tmin <= r.tMax and tmax > max(tmin, 0), tmin, tmax)
 
 # }}}
+
 
 # vim: et:ts=2:sw=2:fdm=marker

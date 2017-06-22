@@ -49,7 +49,7 @@ suite "core/commonTests":
   test "prevFloat & nextFloat (float32)":
     let infinity: float32 = Inf
     let negInfinity: float32 = NegInf
-    let negativeZero: float32 = NegZero
+    let negativeZero: float32 = 1e-1000
     check:
       nextFloat(infinity) == infinity
       prevFloat(infinity) < infinity
@@ -66,7 +66,7 @@ suite "core/commonTests":
   test "prevFloat & nextFloat (float64)":
     let infinity: float64 = Inf
     let negInfinity: float64 = NegInf
-    let negativeZero: float64 = NegZero
+    let negativeZero: float64 = 1e-10000
     check:
       nextFloat(infinity) == infinity
       prevFloat(infinity) < infinity

@@ -594,8 +594,8 @@ suite "core/geometryTests - Box3f":
     var (isHit, t1, t2) = b.intersect(r1)
     check:
       isHit
-      t1 == 1.0
-      t2 == 2.0
+      t1.isClose(FloatT(1.0))
+      t2.isClose(FloatT(2.0))
 
     (isHit, t1, t2) = b.intersect(r2)
     check isHit == false
@@ -604,8 +604,8 @@ suite "core/geometryTests - Box3f":
     (isHit, t1, t2) = b.intersect(r1)
     check:
       isHit == false
-      t1 == 1.0
-      t2 == 2.0
+      t1.isClose(FloatT(1.0))
+      t2.isClose(FloatT(2.0))
 
 # }}}
 # {{{ Box3i
@@ -693,18 +693,20 @@ suite "core/geometryTests - Box3i":
                    tMax = Inf, time = 0, medium = nil)
 
     var (isHit, t1, t2) = b.intersect(r1)
-    check isHit
-    check t1 == 1.0
-    check t2 == 2.0
+    check:
+      isHit
+      t1.isClose(FloatT(1.0))
+      t2.isClose(FloatT(2.0))
 
     (isHit, t1, t2) = b.intersect(r2)
     check isHit == false
 
     r1.tMax = 0.5
     (isHit, t1, t2) = b.intersect(r1)
-    check isHit == false
-    check t1 == 1.0
-    check t2 == 2.0
+    check:
+      not isHit
+      t1.isClose(FloatT(1.0))
+      t2.isClose(FloatT(2.0))
 
 # }}}
 # {{{ Ray

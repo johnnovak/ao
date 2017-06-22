@@ -1,9 +1,18 @@
 import types
-import math
+import fenv, math
 
 export types.FloatT
 
+
 const debug* = not defined(release)
+
+const MachineEpsilonF32* = pow(2'f64, -24'f64)
+const MachineEpsilonF64* = pow(2'f64, -53'f64)
+
+when defined(useFloat64):
+  const MachineEpsilon* = MachineEpsilonF64
+else:
+  const MachineEpsilon* = MachineEpsilonF32
 
 template f32*[T: SomeNumber](x: T): float32 = float32(x)
 template f64*[T: SomeNumber](x: T): float64 = float64(x)
@@ -27,7 +36,7 @@ proc isNaN*(v: float64): bool {.inline.} =
 proc isNaN*[T: SomeInteger](x: T): bool {.inline.} =
   false
 
-proc nextFloat*(f: float32): float32 =
+proc nextFloat*(f: float32): float32 {.inline.} =
   if isNaN(f) or f == Inf: return f
   var n = cast[uint32](f)
   if n == 0x80000000'u32: n = 0  # turn -0.0 to +0.0
@@ -35,7 +44,7 @@ proc nextFloat*(f: float32): float32 =
   else:      n -= 1
   result = cast[float32](n)
 
-proc prevFloat*(f: float32): float32 =
+proc prevFloat*(f: float32): float32 {.inline.} =
   if isNaN(f) or f == NegInf: return f
   var n = cast[uint32](f)
   if n == 0: n = 0x80000000'u32  # turn +0.0 to -0.0
@@ -43,7 +52,7 @@ proc prevFloat*(f: float32): float32 =
   else:     n += 1
   result = cast[float32](n)
 
-proc nextFloat*(f: float64): float64 =
+proc nextFloat*(f: float64): float64 {.inline.} =
   if isNaN(f) or f == Inf: return f
   var n = cast[uint64](f)
   if n == 0x8000000000000000'u64: n = 0  # turn -0.0 to +0.0
@@ -51,13 +60,17 @@ proc nextFloat*(f: float64): float64 =
   else:      n -= 1
   result = cast[float64](n)
 
-proc prevFloat*(f: float64): float64 =
+proc prevFloat*(f: float64): float64 {.inline.} =
   if isNaN(f) or f == NegInf: return f
   var n = cast[uint64](f)
   if n == 0: n = 0x8000000000000000'u64  # turn +0.0 to -0.0
   if f > 0: n -= 1
   else:     n += 1
   result = cast[float64](n)
+
+proc gamma*(n: int): FloatT =
+  let nf = FloatT(n)
+  (nf * MachineEpsilon) / (1 - nf * MachineEpsilon)
 
 proc isCloseFn[T: SomeReal](a, b: T, maxRelDiff: T): bool =
   let
@@ -99,5 +112,6 @@ template sprintf*(format: cstring, args: varargs[untyped]): string =
   var s = newString(buf.len)
   s = buf
   s
+
 
 # vim: et:ts=2:sw=2:fdm=marker
