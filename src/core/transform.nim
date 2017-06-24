@@ -91,7 +91,7 @@ proc inverse*(m: Mat4x4): Mat4x4 =
     invDet = 1.0 / (s0 * c5 - s1 * c4 + s2 * c3 +
                     s3 * c2 - s4 * c1 + s5 * c0)
 
-  assert invDet != 0.0 
+  assert invDet != 0.0
 
   result.m[0][0] = ( m[1,1] * c5 - m[1,2] * c4 + m[1,3] * c3) * invDet
   result.m[0][1] = (-m[0,1] * c5 + m[0,2] * c4 - m[0,3] * c3) * invDet
@@ -298,9 +298,66 @@ proc mulNorm*[T](t: Transform, n: Vec3[T]): Vec3[T] {.inline.} =
           z: T(t.m[0,2] * n.x + t.m[1,2] * n.y + t.m[2,2] * n.z))
 
 proc mulPoint*[T](t: Transform, p: Vec3[T]): Vec3[T] {.inline.} =
-  Vec3[T](x: T(t.m[0,0] * p.x + t.m[0,1] * p.y + t.m[0,2] * p.z + t.m[0,3]),
-          y: T(t.m[1,0] * p.x + t.m[1,1] * p.y + t.m[1,2] * p.z + t.m[1,3]),
-          z: T(t.m[2,0] * p.x + t.m[2,1] * p.y + t.m[2,2] * p.z + t.m[2,3]))
+  let
+    tx = T((t.m[0,0] * p.x + t.m[0,1] * p.y) + (t.m[0,2] * p.z + t.m[0,3]))
+    ty = T((t.m[1,0] * p.x + t.m[1,1] * p.y) + (t.m[1,2] * p.z + t.m[1,3]))
+    tz = T((t.m[2,0] * p.x + t.m[2,1] * p.y) + (t.m[2,2] * p.z + t.m[2,3]))
+
+  result = Vec3[T](x: tx, y: ty, z: tz)
+
+
+# Returns: (transformedVector, pError)
+proc mulVecErr*(t: Transform, p: Vec3f): (Vec3f, Vec3f) {.inline.} =
+  let
+    xAbsSum = abs(t.m[0,0] * p.x) + abs(t.m[0,1] * p.y) +
+              abs(t.m[0,2] * p.z)
+
+    yAbsSum = abs(t.m[1,0] * p.x) + abs(t.m[1,1] * p.y) +
+              abs(t.m[1,2] * p.z)
+
+    zAbsSum = abs(t.m[2,0] * p.x) + abs(t.m[2,1] * p.y) +
+              abs(t.m[2,2] * p.z)
+
+    pError = gamma(3) * vec3f(xAbsSum, yAbsSum, zAbsSum)
+
+  result = (t.mulVec(p), pError)
+
+
+# Returns: (transformedPoint, pErr)
+proc mulPointErr*(t: Transform, p: Vec3f): (Vec3f, Vec3f) {.inline.} =
+  let
+    xAbsSum = abs(t.m[0,0] * p.x) + abs(t.m[0,1] * p.y) +
+              abs(t.m[0,2] * p.z) + abs(t.m[0,3])
+
+    yAbsSum = abs(t.m[1,0] * p.x) + abs(t.m[1,1] * p.y) +
+              abs(t.m[1,2] * p.z) + abs(t.m[1,3])
+
+    zAbsSum = abs(t.m[2,0] * p.x) + abs(t.m[2,1] * p.y) +
+              abs(t.m[2,2] * p.z) + abs(t.m[2,3])
+
+    pErr = gamma(3) * vec3f(xAbsSum, yAbsSum, zAbsSum)
+
+  result = (t.mulPoint(p), pErr)
+
+
+# Returns: (transformedRay, oErr, dErr)
+proc mul*(t: Transform, r: Ray): (Ray, Vec3f, Vec3f) {.inline.} =
+  let
+    (o, oErr) = t.mulPointErr(r.o)
+    (d, dErr) = t.mulVecErr(r.d)
+    dlen = d.len
+
+  var ray = r
+  ray.o = o
+  ray.d = d
+
+  if d.len > 0:
+    let dt = dot(abs(d), oErr) / dlen
+    ray.o += d * dt
+    ray.tMax -= dt
+
+  result = (ray, oErr, dErr)
+
 
 proc mul*[T](t: Transform, b: Box3[T]): Box3[T] {.inline.} =
   var bt =    box3f(t.mulPoint(vec3f(b.pMin.x, b.pMin.y, b.pMin.z)))
