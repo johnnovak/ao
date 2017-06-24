@@ -5,29 +5,51 @@ export types.SurfaceInteraction
 
 # {{{ Interaction
 
-proc init(self: var Interaction, p, pError, n, wo: Vec3f, time: FloatT,
+proc init(self: var Interaction, p, pErr, n, wo: Vec3f, time: FloatT,
           mediumInterface: ref MediumInterface) =
   self.p = p
-  self.pError = pError
+  self.pErr = pErr
   self.n = n
   self.wo = wo
   self.time = time
   self.mediumInterface = mediumInterface
 
-proc initInteraction*(p, pError, n, wo: Vec3f,
+proc initInteraction*(p, pErr, n, wo: Vec3f,
     time: FloatT, mediumInterface: ref MediumInterface = nil): Interaction =
-  init(result, p, pError, n, wo, time, mediumInterface)
-
-proc p*(i: Interaction): Vec3f {.inline.} = i.p
-proc pError*(i: Interaction): Vec3f {.inline.} = i.pError
-proc n*(i: Interaction): Vec3f {.inline.} = i.n
-proc wo*(i: Interaction): Vec3f {.inline.} = i.wo
-proc time*(i: Interaction): FloatT {.inline.} = i.time
-proc mediumInterface*(i: Interaction): ref MediumInterface {.inline.} =
-  i.mediumInterface
+  init(result, p, pErr, n, wo, time, mediumInterface)
 
 proc isSurfaceInteraction*(i: Interaction): bool {.inline.} =
   i.n != vec3f(0,0,0)
+
+proc getMedium*(i: Interaction): ref Medium {.inline.} =
+  assert i.mediumInterface.inside == i.mediumInterface.outside
+  i.mediumInterface.inside
+
+proc getMedium*(i: Interaction, w: Vec3f): ref Medium {.inline.} =
+  if dot(w, i.n) > 0:
+    i.mediumInterface.outside
+  else:
+    i.mediumInterface.inside
+
+proc spawnRay*(i: Interaction, d: Vec3f): Ray {.inline.} =
+  let o = offsetRayOrigin(i.p, i.pErr, i.n, d)
+  Ray(o: o, d: d, tMax: Inf, time: i.time, medium: i.getMedium(d))
+
+proc spawnRayTo*(i: Interaction, pt: Vec3f): Ray {.inline.} =
+  let
+    o = offsetRayOrigin(i.p, i.pErr, i.n, pt - i.p)
+    d = pt - o
+  Ray(o: o, d: d, tMax: 1 - ShadowEpsilon, time: i.time,
+      medium: i.getMedium(d))
+
+proc spawnRayTo*(i: Interaction, it: Interaction): Ray {.inline.} =
+  let 
+    o = offsetRayOrigin(i.p, i.pErr, i.n, it.p - i.p)
+    t = offsetRayOrigin(it.p, it.pErr, it.n, o - it.p)
+    d = t - o
+  # TODO I don't think ShadowEpsilon is needed
+  #Ray(o: o, d: d, 1 - ShadowEpsilon, i.time, i.getMedium(d))
+  Ray(o: o, d: d, tMax: 1, time: i.time, medium: i.getMedium(d))
 
 # }}}
 # {{{ SurfaceInteraction
@@ -37,11 +59,11 @@ proc shouldFlipNormal*(s: SurfaceInteraction): bool {.inline.} =
                        s.shape.transformSwapsHandedness)
 
 
-proc initSurfaceInteraction*(p, pError, uv, wo, dpdu, dpdv, dndu, dndv: Vec3f,
+proc initSurfaceInteraction*(p, pErr, uv, wo, dpdu, dpdv, dndu, dndv: Vec3f,
                              time: FloatT,
                              shape: ref Shape): SurfaceInteraction =
 
-  init(result.Interaction, p, pError, n = cross(dpdu, dpdv).norm, wo,
+  init(result.Interaction, p, pErr, n = cross(dpdu, dpdv).norm, wo,
        time, nil)
 
   result.uv = uv
@@ -60,14 +82,6 @@ proc initSurfaceInteraction*(p, pError, uv, wo, dpdu, dpdv, dndu, dndv: Vec3f,
   if result.shouldFlipNormal:
     result.n *= -1
     result.shading.n *= -1
-
-
-proc uv*(s: SurfaceInteraction): Vec3f {.inline.} = s.uv
-proc dpdu*(s: SurfaceInteraction): Vec3f {.inline.} = s.dpdu
-proc dpdv*(s: SurfaceInteraction): Vec3f {.inline.} = s.dpdv
-proc dndu*(s: SurfaceInteraction): Vec3f {.inline.} = s.dndu
-proc dndv*(s: SurfaceInteraction): Vec3f {.inline.} = s.dndv
-proc shape*(s: SurfaceInteraction): ref Shape {.inline.} = s.shape
 
 
 proc setShadingGeometry*(s: var SurfaceInteraction,

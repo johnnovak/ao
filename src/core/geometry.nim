@@ -335,7 +335,7 @@ proc init(r: var Ray, o, d: Vec3f, tMax, time: FloatT,
           medium: ref Medium) {.inline.} =
   r.o = o
   r.d = d
-  # TODO only calculate on demand?
+  # TODO only calculate on demand? what about zeroes?
   r.dInv = vec3f(1/d.x, 1/d.y, 1/d.z)
   r.tMax = tMax
   r.time = time
@@ -616,6 +616,22 @@ proc intersect*[T](b: Box3[T], r: Ray): (bool, FloatT, FloatT) {.inline.} =
   result = (tmin <= r.tMax and tmax > max(tmin, 0), tmin, tmax)
 
 # }}}
+# {{{ Misc
 
+proc offsetRayOrigin*(p, pErr, n, wo: Vec3f): Vec3f {.inline.} =
+  ## p    - computed imprecise surface intersection point
+  ## pErr - absolute error of p
+  ## n    - surface normal
+  ## wo   - outgoing ray direction
+  var offset = n * dot(n.abs, pErr)
+  if dot(wo, n) < 0:
+    offset = -offset
+  var po = p + offset
+  for i in 0..2:
+    if   offset[i] > 0: po[i] = nextFloat(po[i])
+    elif offset[i] < 0: po[i] = prevFloat(po[i])
+  result = po
+
+# }}}
 
 # vim: et:ts=2:sw=2:fdm=marker

@@ -48,7 +48,7 @@ type
   # {{{ interaction.nim
 
   Interaction* = object of RootObj
-    p*, pError*, n*, wo*: Vec3f
+    p*, pErr*, n*, wo*: Vec3f
     time*: FloatT
     mediumInterface*: ref MediumInterface
 
@@ -64,8 +64,11 @@ type
   # }}}
   # {{{ medium.nim
 
-  Medium* = object
+  Medium* = object of RootObj
     discard
+
+  MediumInterface* = object
+    inside*, outside*: ref Medium
 
   # }}}
   # {{{ shape.nim
@@ -84,9 +87,6 @@ type
 
   Transform* = object
     m*, mInv*: Mat4x4
-
-  MediumInterface* = object
-    discard
 
   # }}}
 
