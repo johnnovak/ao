@@ -27,6 +27,8 @@ const
   PiOver4* = 0.78539816339744830961
   Sqrt2*   = 1.41421356237309504880
 
+  ShadowEpsilon* = 0.0001
+
 proc isNaN*(v: float32): bool {.inline.} =
   (cast[uint32](v) and 0x7fffffff'u32) > 0x7f800000'u32
 
