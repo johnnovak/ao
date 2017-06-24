@@ -26,7 +26,7 @@ when debug:
 proc efloat*(v: SomeNumber): EFloat {.inline.} =
   result.v = v.f32
   when debug:
-    result.vPrecise = v.f64
+    result.vPrecise = result.v
   result.lo = result.v 
   result.hi = result.v
   check(result)
@@ -34,7 +34,7 @@ proc efloat*(v: SomeNumber): EFloat {.inline.} =
 proc efloat*(v, err: SomeNumber): EFloat {.inline.} =
   result.v = v.f32
   when debug:
-    result.vPrecise = v.f64
+    result.vPrecise = result.v
   result.lo = prevFloat(result.v - err)
   result.hi = nextFloat(result.v + err)
   check(result)

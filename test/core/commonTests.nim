@@ -30,17 +30,17 @@ suite "core/commonTests":
       15'f32.isClose(15.00001'f32)
       15'f64.isClose(15.000000001'f64)
 
-  test "quadraticDelta & solveQuadratic":
+  test "quadratic":
     let
       a = 1.0
-      b = -1.786737601482363
-      c = 2.054360090947453e-8
-      delta = quadraticDelta(a, b, c)
-      (x1, x2) = solveQuadratic(a, b, c, delta)
+      b = -1.786737601482363'f32
+      c = 2.054360090947453e-8'f32
+      (solvable, x1, x2) = quadratic(a, b, c)
 
     check:
-      x1.isClose(1.786737589984535)
-      x2.isClose(1.149782767465722e-08)
+      solvable == true
+      x1.isClose(1.149782757892126e-08)
+      x2.isClose(1.786737561225891)
 
   test "sprintf":
     var s = sprintf("stuff: %f", 123.4)
