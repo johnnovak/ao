@@ -92,14 +92,27 @@ proc modulo*[T: SomeReal](x: T): T {.inline.} =
 proc lerp*(a, b, t: FloatT): FloatT {.inline.} =
   (1-t)*a + t*b
 
-proc quadraticDelta*(a, b, c: float64): float64 {.inline.} =
-  b*b - 4*a*c
 
-proc solveQuadratic*(a, b, c, delta: float64): (float64, float64) {.inline.} =
-  var
-    t1 = (-b - sgn(b).f64 * sqrt(delta)) / 2*a
-    t2 = c / (a*t1)
-  result = (t1, t2)
+proc quadratic*(a, b, c: FloatT): (bool, FloatT, FloatT) {.inline.} =
+  let
+    aa = a.f64
+    bb = b.f64
+    cc = c.f64
+    discrim = bb*bb - 4*aa*cc
+
+  if discrim < 0:
+    result = (false, FloatT(0), FloatT(0))
+  else:
+    let
+      rootDiscrim = sqrt(discrim)
+      q = if    bb < 0: -0.5 * (bb - rootDiscrim)
+          else:         -0.5 * (bb + rootDiscrim)
+      t0 = q / aa
+      t1 = cc / q
+
+    result = (true, FloatT(min(t0, t1)),
+                    FloatT(max(t0, t1)))
+
 
 proc printf*(format: cstring) {.header: "<stdio.h>", varargs.}
 

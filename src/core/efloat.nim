@@ -23,20 +23,20 @@ when debug:
   proc relError*(a: EFloat): float32 =
     result = abs((a.vPrecise - a.v) / a.vPrecise)
 
-proc efloat*(v: float32): EFloat {.inline.} =
-  result.v = v
+proc efloat*(v: SomeNumber): EFloat {.inline.} =
+  result.v = v.f32
   when debug:
-    result.vPrecise = v
-  result.lo = v
-  result.hi = v
+    result.vPrecise = v.f64
+  result.lo = result.v 
+  result.hi = result.v
   check(result)
 
-proc efloat*(v, err: float32): EFloat {.inline.} =
-  result.v = v
+proc efloat*(v, err: SomeNumber): EFloat {.inline.} =
+  result.v = v.f32
   when debug:
-    result.vPrecise = v
-  result.lo = prevFloat(v - err)
-  result.hi = nextFloat(v + err)
+    result.vPrecise = v.f64
+  result.lo = prevFloat(result.v - err)
+  result.hi = nextFloat(result.v + err)
   check(result)
 
 proc `+`*(a: EFloat, b: EFloat): EFloat {.inline.} =
@@ -126,6 +126,32 @@ proc abs*(a: EFloat): EFloat {.inline.} =
     result.lo = 0
     result.hi = max(-a.lo, a.hi)
   check(result)
+
+
+proc quadratic*(a, b, c: EFloat): (bool, EFloat, EFloat) {.inline.} =
+  let
+    aa = a.v.f64
+    bb = b.v.f64
+    cc = c.v.f64
+    discrim = bb*bb - 4*aa*cc
+
+  if discrim < 0:
+    result = (false, a, b)
+  else:
+    let
+      rootDiscrim = sqrt(discrim)
+      floatRootDiscrim = efloat(rootDiscrim, MachineEpsilonF32 * rootDiscrim)
+      q = if    bb < 0: -0.5 * (b - rootDiscrim)
+          else:         -0.5 * (b + rootDiscrim)
+    var
+      t0 = q / a
+      t1 = c / q
+
+    if t0.v > t1.v:
+      swap(t0, t1)
+
+    result = (true, t0, t1)
+
 
 
 # vim: et:ts=2:sw=2:fdm=marker
