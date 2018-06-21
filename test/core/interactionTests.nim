@@ -7,7 +7,7 @@ suite "core/interactionTests - Interaction":
 
   test "constructor":
     let i = initInteraction(p = vec3f(1,2,3), pError = vec3f(7,8,9),
-                            n = vec3f(1,0,0), wo = vec3f(4,5,6), time = 1.5)
+                            n = vec3f(1,0,0), wo = vec3f(4,5,6), time = FloatT(1.5))
     check:
       i.p == vec3f(1,2,3)
       i.pError == vec3f(7,8,9)

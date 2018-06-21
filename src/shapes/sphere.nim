@@ -1,4 +1,4 @@
-import common, geometry, interaction, transform, shape
+import common, efloat, geometry, interaction, transform, shape
 import math
 
 
@@ -28,7 +28,7 @@ method objectBound(s: Sphere): Box3f =
 method intersect*(s: Sphere, r: Ray, testAlphaTexture: bool = true):
                                           (bool, FloatT, SurfaceInteraction) =
   let
-    ray, oErr, dErr = s.worldToObject.mul(r)
+    ray, oErr, dErr = s.worldToObject[].mul(r)
 
     ox = efloat(r.o.x, oErr.x)
     oy = efloat(r.o.y, oErr.y)
